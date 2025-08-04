@@ -2,13 +2,14 @@ import mongoose from "mongoose";
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-  name: String,
+  firstName: String,
+  lastName: String,
   email: String,
-  phoneNumber: String,
   password : String,
   role: {
     type: String,
     enum: ["user", "admin"],
+    default : 'user',
   },
   // ratedBooks: [
   //   {

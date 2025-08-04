@@ -3,9 +3,10 @@ import dotenv from 'dotenv'
 import connect from './db/connect.js'
 import userRoutes from './routes/user.js'
 import bookRoutes from './routes/book.js'
-
+import cors from 'cors'
 
 const app = express()
+ app.use(cors());
 app.use(express.json())
 connect()
 dotenv.config()
