@@ -15,9 +15,11 @@ import { useState } from "react";
 import axios from "axios";
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
+import { useRouter } from "next/navigation";
 
 
 const Singin = () => {
+   const router = useRouter();
   const [registrationStatus, setRegistrationStatus] = useState<{ success: boolean; message: string } | null>(null);
 
   const validationSchema = Yup.object({
@@ -30,6 +32,18 @@ const Singin = () => {
       .required("Confirm Password is required"),
   });
 
+  const handleSubmit = async(values)=>{
+    try{
+      const {data} =await axios.post('http://localhost:8080/register',values)
+    if(data.isRegisteredIn){
+      router.push('/login')
+    }
+    }
+    catch(error){
+      alert(error?.response?.data?.message)
+    }
+  } 
+
   const formik = useFormik({
     initialValues: {
       firstName: "",
@@ -39,8 +53,9 @@ const Singin = () => {
       confirmPassword: "",
     },
     validationSchema: validationSchema,
+
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-    
+    handleSubmit(values)
     },
   });
 

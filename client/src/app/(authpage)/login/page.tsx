@@ -15,15 +15,30 @@ import React, { useState } from "react";
 import axios from "axios";
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
-import bookClubLogo from "@/assets/book-club-logo.png";
+import { useRouter } from 'next/navigation'
 
 const Login = () => {
+  const router = useRouter();
   const [loginStatus, setLoginStatus] = useState<{ success: boolean; message: string } | null>(null);
 
   const validationSchema = Yup.object({
     email: Yup.string().email("Invalid email address").required("Email is required"),
     password: Yup.string().required("Password is required"),
   });
+  
+  const handleSubmit = async(values)=>{
+    try {
+    const {data} = await axios.post('http://localhost:8080/login',values)
+    if(data.isLoggedIn)
+      {
+        router.push('/')
+      }
+    }
+    catch(error){
+      console.log(error)
+      alert(error?.response?.data?.message)
+    }
+  }
 
   const formik = useFormik({
     initialValues: {
@@ -32,6 +47,7 @@ const Login = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      handleSubmit(values)
     },
   });
 
