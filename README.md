@@ -22,8 +22,8 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 
 ### 📍 Phase 1 – MVP (Core System)
 
-- [ ] Setup MERN architecture
-- [ ] User Registration & Login pages.
+- [x] Setup MERN architecture
+- [x] User Registration & Login pages.
 - [ ] Basic Logout functionality.
 - [ ] Add New Book form/page.
 - [ ] Display All Books list/page.
