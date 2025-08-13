@@ -1,8 +1,8 @@
 'use client'
 import Head from "next/head";
-import BrandLogo from "@/components/BrandLogo";
-import CategoryFilter from "@/components/CategoryFilter";
-import BookCard, { Book } from "@/components/BookCard";
+import BrandLogo from "@/components/user/BrandLogo";
+import CategoryFilter from "@/components/user/CategoryFilter";
+import BookCard, { Book } from "@/components/user/BookCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
