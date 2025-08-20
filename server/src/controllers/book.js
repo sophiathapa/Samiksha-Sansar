@@ -1,24 +1,31 @@
 import { json } from "express"
 import Book from "../models/book.js"
 
-const getAllBooks = async(req,res)=>{
-  const books = await Book.find()
-  res.json(books)
-}
+const addBook = async(req,res) =>{
+  const book = await Book.findOne({
+    title: req.body.title,
+    publishedDate : req.body.publishedDate
+  })
 
-const getBook = async(req,res)=>{
-  const book = await Book.findById(req.query.id)
-  res.json(book)
-}
+  if (book){
+    res.status(401).json({message:"Book already exists"})
+  }
 
-const addBook = async(req,res)=>{
+  if (!req.file?.filename)
+  {
+     return res.status(400).json({ message: "Image is required" });
+  }
+
+  req.body.coverImg = req.file.filename
+  req.body.genre = JSON.parse(req.body.genre)
   await Book.create(req.body)
-  res.json({message:"Book added to the database"})
+  res.status(201).json("Book created")
 }
 
 const deleteBook = async(req,res)=>{
-  await Book.findByIdAndDelete(req.query.id)
-  res.json({message:"Book deleted from the database"})
+  await Book.deleteOne({_id : req.query.id})
+  res.status(200).json("Book deleted")
 }
 
-export {getAllBooks,getBook,deleteBook,addBook}
+
+export{ addBook,deleteBook}
