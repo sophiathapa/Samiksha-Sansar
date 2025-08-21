@@ -22,10 +22,16 @@ const addBook = async(req,res) =>{
   res.status(201).json("Book created")
 }
 
+
+const getAllBook = async(req,res)=>{
+  const books = await Book.find();
+  res.status(200).json(books)
+}
+
 const deleteBook = async(req,res)=>{
   await Book.deleteOne({_id : req.query.id})
   res.status(200).json("Book deleted")
 }
 
 
-export{ addBook,deleteBook}
+export{ addBook,deleteBook,getAllBook}

@@ -12,6 +12,8 @@ connect()
 dotenv.config()
 const PORT = process.env.PORT || 8000;
 
+app.use('/uploads', express.static('uploads'))
+
 app.use(userRoutes)
 app.use(bookRoutes)
 

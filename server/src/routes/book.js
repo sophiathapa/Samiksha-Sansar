@@ -1,5 +1,5 @@
 import express from "express";
-import { addBook, deleteBook } from "../controllers/book.js";
+import { addBook, deleteBook, getAllBook } from "../controllers/book.js";
 import multer from 'multer'
 
 const router = express.Router()
@@ -17,6 +17,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage })
 
 router.post('/book', upload.single('coverImg'),addBook)
+router.get('/books',getAllBook)
 router.delete('/book',deleteBook)
 
 export default router
