@@ -25,16 +25,15 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 - [x] Setup MERN architecture
 - [x] User Registration & Login pages.
 - [ ] Basic Logout functionality.
-- [ ] Add New Book form/page.
-- [ ] Display All Books list/page.
+- [x] Add New Book form/page.
+- [x] Display All Books list/page.
 - [ ] Basic Book Search/Filter UI.
 - [ ] View Single Book details page.
-- [ ] Basic dashboards (user/admin)
+- [x] Basic dashboards (user/admin)
 
 ### ✨ Phase 2 – Improved Functionality
 
 - [ ] Ratings and reviews by readers
-- [ ] Admin dashboard
 - [ ] Profile uploads (Cloudinary/Firebase)
 - [ ] Reading Status Management
 - [ ] Custom Book Lists/Shelves
