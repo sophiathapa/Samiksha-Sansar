@@ -139,7 +139,7 @@ export default function AddBookForm() {
           coverImg: "",
           totalCounts: 0,
         });
-        setImagePreview(null)
+        setImagePreview(null);
       })
       .catch((error) => {
         alert(error.message);
@@ -188,7 +188,7 @@ export default function AddBookForm() {
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
         <SidebarTrigger className="-ml-1" />
         <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <h1 className="text-lg font-semibold">Add Book</h1>
         </div>
       </header>
       <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background p-4 md:p-8">

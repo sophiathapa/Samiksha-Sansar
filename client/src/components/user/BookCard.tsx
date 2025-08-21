@@ -7,7 +7,7 @@ import { toast } from "sonner";
 export type Book = {
   title: string;
   author: string;
-  image: string;
+  coverImg: string;
 };
 
 interface BookCardProps {
@@ -20,7 +20,7 @@ const BookCard = ({ book, featured }: BookCardProps) => {
     <article className={`relative ${featured ? "w-44 md:w-56" : "w-32 md:w-36"}`}>
       <Card className="overflow-hidden border-0 shadow-md card-tilt">
         <img
-          src={book.image}
+          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
           alt={`${book.title} book cover by ${book.author}`}
           loading="lazy"
           className={`block w-full object-cover ${featured ? "h-64 md:h-80" : "h-44 md:h-52"}`}
@@ -29,6 +29,7 @@ const BookCard = ({ book, featured }: BookCardProps) => {
       <div className="mt-2">
         <h3 className="text-sm font-semibold truncate" title={book.title}>{book.title}</h3>
         <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+
       </div>
       <div className="absolute top-2 right-2">
         <Tooltip>
