@@ -1,23 +1,31 @@
 import express from "express";
-import { addBook, deleteBook, getAllBook } from "../controllers/book.js";
-import multer from 'multer'
+import {
+  addBook,
+  deleteBook,
+  getAllBook,
+  getBookByGenre,
+  searchBook,
+} from "../controllers/book.js";
+import multer from "multer";
 
-const router = express.Router()
+const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads')
+    cb(null, "uploads");
   },
   filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + Math.round(Math.random())
-    cb(null, uniqueSuffix + file.originalname)
-  }
-})
+    const uniqueSuffix = Date.now() + Math.round(Math.random());
+    cb(null, uniqueSuffix + file.originalname);
+  },
+});
 
-const upload = multer({ storage: storage })
+const upload = multer({ storage: storage });
 
-router.post('/book', upload.single('coverImg'),addBook)
-router.get('/books',getAllBook)
-router.delete('/book',deleteBook)
+router.post("/book", upload.single("coverImg"), addBook);
+router.get("/books", getAllBook);
+router.get("/books/search", searchBook);
+router.get("/books/genre", getBookByGenre);
+router.delete("/book", deleteBook);
 
-export default router
+export default router;

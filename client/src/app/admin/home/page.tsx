@@ -6,12 +6,16 @@ import BookCard from "@/components/user/BookCard";
 import CategoryFilter from "@/components/user/CategoryFilter";
 import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import axios from "axios";
-import { Search } from "lucide-react";
+import { Circle, CircleX, Search } from "lucide-react";
 import Head from "next/head";
 import React, { useActionState, useEffect, useState } from "react";
 
 const Home = () => {
   const [books, setBooks] = useState([]);
+  const [search, setSearch] = useState("");
+  const [searchBooks, setSearchBooks] = useState([]);
+  const [genre, setGenre] = useState("All");
+  const [bookByGenre, setBookByGenre] = useState([]);
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
@@ -20,9 +24,35 @@ const Home = () => {
     setBooks(fetchedBooks.data);
   };
 
+  const handleSearch = (e) => {
+    setSearch(e.target.value);
+    console.log(search);
+  };
+
+  const handleSearchSubmit = async () => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/books/search?search=${search}`
+    );
+    setSearchBooks(data);
+  };
+
+  const fetchBookByGenre = async () => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
+    );
+    setBookByGenre(data);
+    console.log(bookByGenre);
+  };
+
   useEffect(() => {
     fetchBook();
   }, []);
+
+  useEffect(() => {
+    fetchBookByGenre();
+  }, [genre]);
+
+  console.log(genre);
 
   return (
     <>
@@ -44,23 +74,43 @@ const Home = () => {
                   placeholder="Search name of the book or author…"
                   className="pl-9"
                   aria-label="Search books"
+                  value={search}
+                  onChange={handleSearch}
+                />
+                <CircleX
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                  onClick={() => setSearch("")}
                 />
               </div>
-              <Avatar>
-                <AvatarFallback>K</AvatarFallback>
-              </Avatar>
+              <Button onClick={handleSearchSubmit}>Search</Button>
             </header>
 
+            {searchBooks && (
+              <div className=" flex gap-5 mt-5">
+                {searchBooks.map((book, id) => {
+                  return <BookCard key={id} book={book} />;
+                })}
+              </div>
+            )}
+
             <div className="mt-4 md:mt-6 mb-5">
-              <CategoryFilter />
+              <CategoryFilter genre={genre} setGenre={setGenre} />
             </div>
 
             {/* Popular Bestsellers */}
-            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-              {books.map((b, i) => (
-                <BookCard key={i} book={b} featured />
-              ))}
-            </div>
+            {genre === "All" ? (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {books.map((b, i) => (
+                  <BookCard key={i} book={b} featured />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {bookByGenre.map((b, i) => (
+                  <BookCard key={i} book={b} featured />
+                ))}
+              </div>
+            )}
           </main>
         </div>
       </div>

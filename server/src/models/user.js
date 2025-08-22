@@ -5,11 +5,11 @@ const userSchema = new Schema({
   firstName: String,
   lastName: String,
   email: String,
-  password : String,
+  password: String,
   role: {
     type: String,
     enum: ["user", "admin"],
-    default : 'user',
+    default: "user",
   },
   // ratedBooks: [
   //   {
@@ -18,7 +18,6 @@ const userSchema = new Schema({
   //   },
   // ],
   // favoriteGenres: [String],
-
 });
 
 const User = mongoose.model("User", userSchema);
