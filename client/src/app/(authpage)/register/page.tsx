@@ -16,6 +16,7 @@ import axios from "axios";
 import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { useRouter } from "next/navigation";
+import Header1 from "@/components/header1"
 
 
 const Singin = () => {
@@ -34,7 +35,7 @@ const Singin = () => {
 
   const handleSubmit = async(values)=>{
     try{
-      const {data} =await axios.post('http://localhost:8080/register',values)
+      const {data} =await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/register`,values)
     if(data.isRegisteredIn){
       router.push('/login')
     }
@@ -54,27 +55,14 @@ const Singin = () => {
     },
     validationSchema: validationSchema,
 
-    onSubmit: async (values, { setSubmitting, resetForm }) => {
+    onSubmit: async (values, {setSubmitting, resetForm }) => {
     handleSubmit(values)
     },
   });
 
   return (
     <>
-        <div className="flex flex-col justify-center items-center mb-8">
-          <img 
-            className="w-25 h-25 mb-4 rounded-full shadow-lg" 
-            src='logo.png'
-            alt="Book Club Logo"
-          />
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Join Our Book Club
-          </h1>
-          <p className="text-muted-foreground text-center">
-            Create your account to start your reading journey
-          </p>
-        </div>
-        
+       
         <Card className="shadow-xl">
           <CardHeader>
             <CardTitle className="text-center text-2xl font-bold">Create Account</CardTitle>

@@ -1,14 +1,20 @@
 import React from "react";
-import styles from '../style.module.css'
+import styles from "../style.module.css";
+import { Toaster } from "sonner";
+import Header1 from "@/components/header1";
 
-const Layout = ({children}) => {
+const Layout = ({ children }) => {
   return (
-    <div className={`flex items-center justify-center p-4 ${styles.authContainer}`}>
-      <div className="w-full max-w-md ">
+    <div className="flex flex-col w-full">
+      <Header1 />
+      <div className="flex flex-col  items-center justify-center p-4">
         {children}
-        </div>
+        <Toaster />
+      </div>
     </div>
   );
 };
 
 export default Layout;
+
+//${styles.authContainer}

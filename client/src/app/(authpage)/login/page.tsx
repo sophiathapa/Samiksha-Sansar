@@ -31,7 +31,7 @@ const Login = () => {
     const {data} = await axios.post('http://localhost:8080/login',values)
     if(data.isLoggedIn)
       {
-        router.push('/')
+        router.push('/user')
       }
     }
     catch(error){
@@ -53,12 +53,8 @@ const Login = () => {
 
   return (
        <>
-        <div className="flex flex-col justify-center items-center mb-8">
-          <img 
-            className="w-25 h-25 mb-4 rounded-full shadow-lg" 
-            src='logo.png'
-            alt="Book Club Logo"
-          />
+        <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
+          
           <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome Back
           </h1>
@@ -155,6 +151,7 @@ const Login = () => {
             </div>
           </CardFooter>
         </Card>
+      
      </>
   );
 };

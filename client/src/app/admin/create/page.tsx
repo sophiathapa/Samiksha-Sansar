@@ -218,7 +218,7 @@ export default function AddBookForm() {
               <form
                 onSubmit={handleSubmit}
                 className="space-y-8"
-                enctype="multipart/form-data"
+                encType="multipart/form-data"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   {/* Left Column */}

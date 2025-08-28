@@ -31,17 +31,17 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/admin/home",
     icon: Home,
   },
   {
     title: "Add Book",
-    url: "#",
+    url: "/admin/create",
     icon: Inbox,
   },
   {
     title: "Edit Book",
-    url: "#",
+    url: "/admin/edit",
     icon: Calendar,
   },
   {
