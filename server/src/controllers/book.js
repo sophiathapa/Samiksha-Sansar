@@ -56,4 +56,24 @@ const getBookByGenre = async (req, res) => {
   res.json(book);
 };
 
-export { addBook, deleteBook, getAllBook, searchBook, getBookByGenre };
+const editBook = async (req, res) => {
+  const { id } = req.query;
+  req.body.coverImg = req.file.filename;
+  req.body.genre = JSON.parse(req.body.genre);
+  await Book.findByIdAndUpdate(id, { $set: req.body }, { $new: true });
+
+  if (!req.query.id) {
+    return res.status(401).json(" Book with that id not found");
+  }
+
+  return res.status(200).json("Book updated");
+};
+
+export {
+  addBook,
+  deleteBook,
+  getAllBook,
+  searchBook,
+  getBookByGenre,
+  editBook,
+};
