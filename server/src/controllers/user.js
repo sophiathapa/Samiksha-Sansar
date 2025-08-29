@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { sendEmail } from "../utils/email.js";
 
 const getAllUsers = async (req, res) => {
   const users = await User.find();
@@ -12,11 +13,17 @@ const register = async (req, res) => {
   if (userExist) {
     return res.status(400).json({ message: "Email already exist" });
   }
-
   // hashing the plainText password
   req.body.password = await bcrypt.hash(req.body.password, 10);
 
   await User.create(req.body);
+  await sendEmail({
+      to: req.body.email,
+      subject: "Welcome to Book Club 🎉",
+      text: `Hi ${req.body.firstName}, thanks for registering!`,
+      html: `<h1>Hello ${req.body.firstName}</h1><p>Welcome to Book Club 🎉</p>`,
+    });
+
   return res.json({
     message: "User registered successfully",
     user: req.body,
@@ -45,3 +52,4 @@ const login = async (req, res) => {
 };
 
 export { getAllUsers, register, login };
+
