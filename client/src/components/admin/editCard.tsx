@@ -183,7 +183,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label
-                    htmlFor="title"
+                    for="title"
                     className="text-sm font-semibold text-foreground flex items-center gap-2"
                   >
                     Book Title <span className="text-destructive">*</span>
@@ -203,7 +203,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
 
                 <div className="space-y-2">
                   <Label
-                    htmlFor="publisher"
+                    for="publisher"
                     className="text-sm font-semibold text-foreground"
                   >
                     Publisher
@@ -222,7 +222,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
 
                 <div className="space-y-2">
                   <Label
-                    htmlFor="language"
+                    for="language"
                     className="text-sm font-semibold text-foreground"
                   >
                     Language

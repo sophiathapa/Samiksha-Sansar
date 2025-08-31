@@ -1,14 +1,13 @@
 "use client";
+import BookDetailCard from "@/components/BookDetailCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import BookCard from "@/components/user/BookCard";
 import CategoryFilter from "@/components/user/CategoryFilter";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
 import axios from "axios";
-import { Circle, CircleX, Search } from "lucide-react";
-import Head from "next/head";
-import React, { useActionState, useEffect, useState } from "react";
+import { CircleX, Search } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 const Home = () => {
   const [books, setBooks] = useState([]);
@@ -16,6 +15,7 @@ const Home = () => {
   const [searchBooks, setSearchBooks] = useState([]);
   const [genre, setGenre] = useState("All");
   const [bookByGenre, setBookByGenre] = useState([]);
+  const [selectBook, setSelectBook] = useState(null);
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
@@ -26,7 +26,6 @@ const Home = () => {
 
   const handleSearch = (e) => {
     setSearch(e.target.value);
-    console.log(search);
   };
 
   const handleSearchSubmit = async () => {
@@ -41,7 +40,6 @@ const Home = () => {
       `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
     );
     setBookByGenre(data);
-    console.log(bookByGenre);
   };
 
   useEffect(() => {
@@ -52,7 +50,9 @@ const Home = () => {
     fetchBookByGenre();
   }, [genre]);
 
-  console.log(genre);
+  const handleBack = () => {
+    setSelectBook(null);
+  };
 
   return (
     <>
@@ -67,49 +67,79 @@ const Home = () => {
         <div className="mx-auto max-w-7xl grid grid-cols-12 gap-6 px-4 py-6 md:py-8">
           {/* Main content */}
           <main className="col-span-12">
-            <header className="flex items-center gap-4 rounded-2xl bg-card p-3 md:p-4 shadow-sm">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search name of the book or author…"
-                  className="pl-9"
-                  aria-label="Search books"
-                  value={search}
-                  onChange={handleSearch}
-                />
-                <CircleX
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-                  onClick={() => setSearch("")}
-                />
-              </div>
-              <Button onClick={handleSearchSubmit}>Search</Button>
-            </header>
+            {!selectBook ? (
+              <>
+                <header className="flex items-center gap-4 rounded-2xl bg-card p-3 md:p-4 shadow-sm">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search name of the book or author…"
+                      className="pl-9"
+                      aria-label="Search books"
+                      value={search}
+                      onChange={handleSearch}
+                    />
+                    <CircleX
+                      className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                      onClick={() => setSearch("")}
+                    />
+                  </div>
+                  <Button onClick={handleSearchSubmit}>Search</Button>
+                </header>
 
-            {searchBooks && (
-              <div className=" flex gap-5 mt-5">
-                {searchBooks.map((book, id) => {
-                  return <BookCard key={id} book={book} />;
-                })}
-              </div>
-            )}
+                {searchBooks && (
+                  <div className=" flex gap-5 mt-5">
+                    {searchBooks.map((book, id) => {
+                      return (
+                        <BookCard
+                          key={id}
+                          book={book}
+                          onClick={() => {
+                            setSelectBook(book);
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
 
-            <div className="mt-4 md:mt-6 mb-5">
-              <CategoryFilter genre={genre} setGenre={setGenre} />
-            </div>
+                <div className="mt-4 md:mt-6 mb-5">
+                  <CategoryFilter genre={genre} setGenre={setGenre} />
+                </div>
 
-            {/* Popular Bestsellers */}
-            {genre === "All" ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {books.map((b, i) => (
-                  <BookCard key={i} book={b} featured />
-                ))}
-              </div>
+                {/* Popular Bestsellers */}
+                {genre === "All" ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {books.map((b, i) => (
+                      <BookCard
+                        key={i}
+                        book={b}
+                        featured
+                        onClick={() => {
+                          setSelectBook(b);
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                    {bookByGenre.map((b, i) => (
+                      <BookCard
+                        key={i}
+                        book={b}
+                        featured
+                        onClick={() => {
+                          setSelectBook(b);
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                {bookByGenre.map((b, i) => (
-                  <BookCard key={i} book={b} featured />
-                ))}
-              </div>
+              <>
+                <BookDetailCard book={selectBook} onBack={handleBack} />
+              </>
             )}
           </main>
         </div>
