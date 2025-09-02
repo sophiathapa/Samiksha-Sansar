@@ -27,8 +27,8 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 - [ ] Basic Logout functionality.
 - [x] Add New Book form/page.
 - [x] Display All Books list/page.
-- [ ] Basic Book Search/Filter UI.
-- [ ] View Single Book details page. 
+- [x] Basic Book Search/Filter UI.
+- [x] View Single Book details page. 
 - [x] Basic dashboards (user/admin).
 
 ### ✨ Phase 2 – Improved Functionality

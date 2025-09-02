@@ -1,30 +1,22 @@
 "use client";
-import Head from "next/head";
-import BrandLogo from "@/components/user/BrandLogo";
 import CategoryFilter from "@/components/user/CategoryFilter";
 import BookCard, { Book } from "@/components/user/BookCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Home,
-  Star,
-  Bookmark,
-  Crown,
-  Heart,
-  Settings,
-  LogOut,
   Search,
 } from "lucide-react";
 
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useEffect, useState } from "react";
 import axios from "axios";
-
+import { useSelector } from "react-redux";
 
 
 const UserPage = () => {
- const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState([]);
+  const [genre, setGenre] = useState("All");
+  const count = useSelector((state)=>state.counter.value)
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
@@ -37,20 +29,9 @@ const UserPage = () => {
     fetchBook();
   }, []);
 
-
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        <SidebarTrigger className="-ml-1" />
-        <div className="flex items-center gap-2">
-          <h1 className="text-lg font-semibold">Dashboard</h1>
-        </div>
-      </header>
-
-      
       <div className="min-h-screen bg-app-gradient">
-      
-
         <div className="mx-auto max-w-7xl grid grid-cols-12 gap-6 px-4 py-6 md:py-8">
           {/* Main content */}
           <main className="col-span-12">
@@ -69,13 +50,17 @@ const UserPage = () => {
             </header>
 
             <div className="mt-4 md:mt-6">
-              <CategoryFilter />
+              <CategoryFilter genre={genre} setGenre={setGenre} />
             </div>
 
             {/* Popular Bestsellers */}
             <section className="mt-6 md:mt-8" aria-labelledby="popular-heading">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <div className="lg:col-span-4">
+                 <h3>
+                  Redux value: {count}
+                 </h3>
+                
                   <h1
                     id="popular-heading"
                     className="text-2xl md:text-3xl font-bold tracking-tight"
