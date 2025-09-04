@@ -51,5 +51,20 @@ const login = async (req, res) => {
     .json({ message: "Login successful", token, user: user, isLoggedIn: true });
 };
 
-export { getAllUsers, register, login };
+const addFavoriteBooks = async(req,res)=>{
+  const {userId, bookId} = req.body
+  const user = await User.findById(userId)
+  if (!user){
+    return res.json({message : "user doesnot exit"})
+  }
+  if (user.favouriteBooks.includes(bookId)){
+    return res.status(400).json({ message: "Book already added to favorites" });
+  }
+  user.favouriteBooks.push( bookId)
+  await user.save()
+  return res.status(201).json({message : "Book added to favorites"})
+
+}
+
+export { getAllUsers, register, login,addFavoriteBooks };
 

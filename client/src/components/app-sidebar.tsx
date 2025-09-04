@@ -56,24 +56,7 @@ const items = [
   },
 ]
 
-// Projects data
-const projects = [
-  {
-    name: "Design System",
-    url: "#",
-    icon: Folder,
-  },
-  {
-    name: "Sales & Marketing",
-    url: "#",
-    icon: Folder,
-  },
-  {
-    name: "Travel",
-    url: "#",
-    icon: Folder,
-  },
-]
+
 
 export function AppSidebar() {
   return (
@@ -114,43 +97,6 @@ export function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Projects</SidebarGroupLabel>
-          <SidebarMenu>
-            {projects.map((item) => (
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton asChild>
-                  <a href={item.url}>
-                    <item.icon />
-                    <span>{item.name}</span>
-                  </a>
-                </SidebarMenuButton>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuAction showOnHover>
-                      <MoreHorizontal />
-                      <span className="sr-only">More</span>
-                    </SidebarMenuAction>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-48 rounded-lg" side="bottom" align="end">
-                    <DropdownMenuItem>
-                      <Folder className="text-muted-foreground" />
-                      <span>Add Book</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Forward className="text-muted-foreground" />
-                      <span>Edit Book</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Trash2 className="text-muted-foreground" />
-                      <span>Delete Book</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter>

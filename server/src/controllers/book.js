@@ -58,7 +58,7 @@ const getBookByGenre = async (req, res) => {
 
 const editBook = async (req, res) => {
   const { id } = req.query;
-  req.body.coverImg = req.file.filename;
+  req.body.coverImg = req.file?.filename;
   req.body.genre = JSON.parse(req.body.genre);
   await Book.findByIdAndUpdate(id, { $set: req.body }, { $new: true });
 

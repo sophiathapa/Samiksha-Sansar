@@ -5,18 +5,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
+  CircleX,
   Search,
 } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import BookDetailCard from "@/components/BookDetailCard";
 
 
 const UserPage = () => {
   const [books, setBooks] = useState([]);
   const [genre, setGenre] = useState("All");
-  const count = useSelector((state)=>state.counter.value)
+  const userName = useSelector((state)=>state.user.name)
+  const [searchBooks, setSearchBooks] =useState([])
+  const [search,setSearch] = useState("")
+  const [bookByGenre,setBookByGenre]= useState([])
+  const [selectBook,setSelectBook] =useState(null)
+
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
@@ -25,16 +32,35 @@ const UserPage = () => {
     setBooks(fetchedBooks.data);
   };
 
+  const fetchBookByGenre = async () => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
+    );
+    setBookByGenre(data);
+  };
+
   useEffect(() => {
     fetchBook();
   }, []);
 
+    useEffect(() => {
+    fetchBookByGenre();
+  }, [genre]);
+
+  const handleSearchSubmit = async () => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/books/search?search=${search}`
+    );
+    setSearchBooks(data);
+  }
+
+  console.log(selectBook)
   return (
     <>
       <div className="min-h-screen bg-app-gradient">
         <div className="mx-auto max-w-7xl grid grid-cols-12 gap-6 px-4 py-6 md:py-8">
           {/* Main content */}
-          <main className="col-span-12">
+          <main className="col-span-12 p-5">
             <header className="flex items-center gap-4 rounded-2xl bg-card p-3 md:p-4 shadow-sm">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -42,25 +68,51 @@ const UserPage = () => {
                   placeholder="Search name of the book or author…"
                   className="pl-9"
                   aria-label="Search books"
+                  value = {search}
+                  onChange={(e)=>setSearch(e.target.value)}
                 />
+                <CircleX
+                      className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+                      onClick={() => setSearch("")}
+                    />
               </div>
+               <Button onClick={handleSearchSubmit}>Search</Button>
               <Avatar>
-                <AvatarFallback>K</AvatarFallback>
+                <AvatarFallback>{userName[0].toUpperCase()}</AvatarFallback>
               </Avatar>
             </header>
 
-            <div className="mt-4 md:mt-6">
+             {searchBooks && (
+                  <div className=" flex gap-5 mt-5">
+                    {searchBooks.map((book, id) => {
+                      return (
+                        <BookCard
+                          key={id}
+                          book={book}
+                          onClick={() => {
+                            setSelectBook(book)
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+            {!selectBook ?  (
+              <>
+                 <div className="mt-4 md:mt-6">
               <CategoryFilter genre={genre} setGenre={setGenre} />
             </div>
 
-            {/* Popular Bestsellers */}
+           
+            {
+              genre === "All" ? (
+                <>
+                {/* Popular Bestsellers */}
             <section className="mt-6 md:mt-8" aria-labelledby="popular-heading">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <div className="lg:col-span-4">
-                 <h3>
-                  Redux value: {count}
-                 </h3>
-                
+                 
                   <h1
                     id="popular-heading"
                     className="text-2xl md:text-3xl font-bold tracking-tight"
@@ -79,7 +131,9 @@ const UserPage = () => {
                   <div className="shelf">
                     <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
                       {books.map((b, i) => (
-                        <BookCard key={i} book={b} featured />
+                        <BookCard key={i} book={b} featured onClick={() => {
+                            setSelectBook(b)
+                          }} />
                       ))}
                     </div>
                   </div>
@@ -105,11 +159,34 @@ const UserPage = () => {
               <div className="mt-4 shelf">
                 <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
                   {books.map((b, i) => (
-                    <BookCard key={i} book={b} />
+                    <BookCard key={i} book={b} onClick={() => {
+                            setSelectBook(b)
+                          }} />
                   ))}
                 </div>
               </div>
             </section>
+            </>
+              ): (
+
+                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-3 mt-10">
+                  {bookByGenre.map((b, i) => (
+                    <BookCard key={i} book={b} onClick={() => {
+                            setSelectBook(b)
+                          }} />
+                  ))}
+                </div>
+
+              )
+            }
+           </>
+            ): (
+              
+              <BookDetailCard book = {selectBook} onBack={()=>setSelectBook(null)}/>
+            )}
+
+           
+
           </main>
         </div>
       </div>

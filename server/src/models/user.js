@@ -11,13 +11,15 @@ const userSchema = new Schema({
     enum: ["user", "admin"],
     default: "user",
   },
-  // ratedBooks: [
-  //   {
-  //     bookId: String,
-  //     rating: Number,
-  //   },
-  // ],
-  // favoriteGenres: [String],
+  favouriteBooks :  [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Book',
+    }],
+
+  savedBooks : [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Book',
+    }],
 });
 
 const User = mongoose.model("User", userSchema);

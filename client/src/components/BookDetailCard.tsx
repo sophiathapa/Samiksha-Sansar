@@ -22,8 +22,27 @@ import {
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { useSelector } from "react-redux";
+import axios from "axios";
 
 const BookDetailCard = ({ book, onBack }) => {
+  const userId  = useSelector((state)=> state.user.id)
+  console.log(userId)
+
+  const handleFavorite = async(bookId)=>{
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/favorite`,{
+        bookId : bookId,
+        userId : userId,
+      })
+
+      alert("Book added to favorites")
+
+    } catch(error){
+      alert(error?.response?.data?.message)
+    }
+  }
+
   return (
     <div className="flex flex-col gap-10">
       <div className="flex items-center">
@@ -49,7 +68,7 @@ const BookDetailCard = ({ book, onBack }) => {
           </CardContent>
           <CardFooter className="items-center justify-center">
             <div className="grid grid-cols-2 gap-12">
-              <Button>
+              <Button onClick={()=>handleFavorite(book._id)}>
                 <div className="flex gap-3 items-center">
                   <Heart className="w-6 h-6" />
                   <span>Favorite </span>
@@ -88,7 +107,7 @@ const BookDetailCard = ({ book, onBack }) => {
               <div className="flex gap-2 items-center ">
                 <Calendar className="text-muted-foreground w-4 h-4" />
                 <span className="text-muted-foreground">Published:</span>
-                <span>{book.publishedDate.split("T")[0]}</span>
+                <span>{book.publishedDate?.split("T")[0] || ""}</span>
               </div>
             </div>
 
@@ -100,7 +119,7 @@ const BookDetailCard = ({ book, onBack }) => {
                 <span>{book.language}</span>
               </div>
               <div className="flex gap-2 ">
-                <Bookmark className="text-muted-foreground w-6 h-6 " />
+                <Bookmark className="text-muted-foreground w-4 h-4 mt-1 " />
                 <div className="grid grid-cols-[auto_1fr] gap-2 ">
                   <span className="text-muted-foreground ">Genre:</span>
                   <div className="flex gap-1 flex-wrap mt-1">
