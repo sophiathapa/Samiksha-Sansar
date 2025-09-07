@@ -24,7 +24,7 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 
 - [x] Setup MERN architecture
 - [x] User Registration & Login pages.
-- [ ] Basic Logout functionality.
+- [x] Basic Logout functionality.
 - [x] Add New Book form/page.
 - [x] Display All Books list/page.
 - [x] Basic Book Search/Filter UI.

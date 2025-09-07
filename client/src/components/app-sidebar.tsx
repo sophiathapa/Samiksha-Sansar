@@ -2,13 +2,8 @@ import {
   Calendar,
   Home,
   Inbox,
-  Search,
   Settings,
   User2,
-  MoreHorizontal,
-  Folder,
-  Forward,
-  Trash2,
   ChevronUp,
 } from "lucide-react"
 
@@ -45,17 +40,11 @@ const items = [
     icon: Calendar,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
     title: "Settings",
     url: "#",
     icon: Settings,
   },
 ]
-
 
 
 export function AppSidebar() {

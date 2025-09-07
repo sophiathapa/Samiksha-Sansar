@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,38 +13,42 @@ import { Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import axios from "axios";
-import * as Yup from 'yup';
-import { useFormik } from 'formik';
-import { useRouter } from 'next/navigation'
+import * as Yup from "yup";
+import { useFormik } from "formik";
+import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/lib/redux/features/user/userSlice";
 
 const Login = () => {
   const router = useRouter();
-  const [loginStatus, setLoginStatus] = useState<{ success: boolean; message: string } | null>(null);
-  const dispatch = useDispatch()
+  const [loginStatus, setLoginStatus] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
+  const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email address").required("Email is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
     password: Yup.string().required("Password is required"),
   });
-  
-  const handleSubmit = async(values)=>{
+
+  const handleSubmit = async (values) => {
     try {
-    const {data} = await axios.post('http://localhost:8080/login',values)
-    const {_id,firstName,email} = data.user
-    const {token} = data.token
-    if(data.isLoggedIn)
-      {
-        router.push('/user/home')
-        dispatch( setUser({ name : firstName, id :_id, email : email, token: token  }))
+      const { data } = await axios.post("http://localhost:8080/login", values);
+      const { _id, firstName, email } = data.user;
+      const { token } = data.token;
+      if (data.isLoggedIn) {
+        router.push("/user/home");
+        dispatch(
+          setUser({ name: firstName, id: _id, email: email, token: token })
+        );
       }
+    } catch (error) {
+      alert(error?.response?.data?.message);
     }
-    catch(error){
-      console.log(error)
-      alert(error?.response?.data?.message)
-    }
-  }
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -53,112 +57,124 @@ const Login = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
-      handleSubmit(values)
+      handleSubmit(values);
     },
   });
 
   return (
-       <>
-        <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
-          
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Welcome Back
-          </h1>
-          <p className="text-muted-foreground text-center">
-            Sign in to continue your reading journey
-          </p>
-        </div>
-        
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl font-bold">Sign In</CardTitle>
-            <CardDescription className="text-center">
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          
-          <CardContent>
-            <form onSubmit={formik.handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-foreground font-medium block">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    className="pl-10"
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  />
-                </div>
-                {formik.touched.email && formik.errors.email && (
-                  <p className="text-destructive text-sm">{formik.errors.email}</p>
-                )}
-              </div>
+    <>
+      <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Welcome Back
+        </h1>
+        <p className="text-muted-foreground text-center">
+          Sign in to continue your reading journey
+        </p>
+      </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="text-foreground font-medium block">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    className="pl-10"
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                  />
-                </div>
-                {formik.touched.password && formik.errors.password && (
-                  <p className="text-destructive text-sm">{formik.errors.password}</p>
-                )}
-              </div>
+      <Card className="shadow-xl">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl font-bold">
+            Sign In
+          </CardTitle>
+          <CardDescription className="text-center">
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
 
-              {loginStatus && (
-                <div className={`p-3 rounded-md text-sm ${
-                  loginStatus.success 
-                    ? 'bg-green-50 text-green-800 border border-green-200' 
-                    : 'bg-red-50 text-red-800 border border-red-200'
-                }`}>
-                  {loginStatus.message}
-                </div>
+        <CardContent>
+          <form onSubmit={formik.handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="email"
+                className="text-foreground font-medium block"
+              >
+                Email Address
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formik.values.email}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </div>
+              {formik.touched.email && formik.errors.email && (
+                <p className="text-destructive text-sm">
+                  {formik.errors.email}
+                </p>
               )}
-            </form>
-          </CardContent>
-          
-          <CardFooter className="flex flex-col space-y-4">
-            <Button 
-              type="submit" 
-              className="w-full" 
-              onClick={formik.handleSubmit as any}
-              disabled={formik.isSubmitting}
-            >
-              {formik.isSubmitting ? "Signing In..." : "Sign In"}
-            </Button>
-            <div className="text-center">
-              <p className="text-muted-foreground">
-                Don't have an account?{" "}
-                <Link
-                  href="/register"
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Create one here
-                </Link>
-              </p>
             </div>
-          </CardFooter>
-        </Card>
-      
-     </>
+
+            <div className="space-y-2">
+              <label
+                htmlFor="password"
+                className="text-foreground font-medium block"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  className="pl-10"
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formik.values.password}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                />
+              </div>
+              {formik.touched.password && formik.errors.password && (
+                <p className="text-destructive text-sm">
+                  {formik.errors.password}
+                </p>
+              )}
+            </div>
+
+            {loginStatus && (
+              <div
+                className={`p-3 rounded-md text-sm ${
+                  loginStatus.success
+                    ? "bg-green-50 text-green-800 border border-green-200"
+                    : "bg-red-50 text-red-800 border border-red-200"
+                }`}
+              >
+                {loginStatus.message}
+              </div>
+            )}
+          </form>
+        </CardContent>
+
+        <CardFooter className="flex flex-col space-y-4">
+          <Button
+            type="submit"
+            className="w-full"
+            onClick={formik.handleSubmit as any}
+            disabled={formik.isSubmitting}
+          >
+            {formik.isSubmitting ? "Signing In..." : "Sign In"}
+          </Button>
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              Don't have an account?{" "}
+              <Link
+                href="/register"
+                className="text-primary hover:text-primary/80 font-medium transition-colors"
+              >
+                Create one here
+              </Link>
+            </p>
+          </div>
+        </CardFooter>
+      </Card>
+    </>
   );
 };
 

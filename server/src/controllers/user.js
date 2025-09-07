@@ -2,6 +2,7 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/email.js";
+import Book from "../models/book.js";
 
 const getAllUsers = async (req, res) => {
   const users = await User.find();
@@ -18,11 +19,11 @@ const register = async (req, res) => {
 
   await User.create(req.body);
   await sendEmail({
-      to: req.body.email,
-      subject: "Welcome to Book Club 🎉",
-      text: `Hi ${req.body.firstName}, thanks for registering!`,
-      html: `<h1>Hello ${req.body.firstName}</h1><p>Welcome to Book Club 🎉</p>`,
-    });
+    to: req.body.email,
+    subject: "Welcome to Book Club 🎉",
+    text: `Hi ${req.body.firstName}, thanks for registering!`,
+    html: `<h1>Hello ${req.body.firstName}</h1><p>Welcome to Book Club 🎉</p>`,
+  });
 
   return res.json({
     message: "User registered successfully",
@@ -51,20 +52,59 @@ const login = async (req, res) => {
     .json({ message: "Login successful", token, user: user, isLoggedIn: true });
 };
 
-const addFavoriteBooks = async(req,res)=>{
-  const {userId, bookId} = req.body
-  const user = await User.findById(userId)
-  if (!user){
-    return res.json({message : "user doesnot exit"})
+const addFavoriteBooks = async (req, res) => {
+  const { userId, bookId } = req.body;
+  const user = await User.findById(userId);
+  if (user === null) {
+    return res.json({ message: "user doesnot exit" });
   }
-  if (user.favouriteBooks.includes(bookId)){
+  if (user.favouriteBooks.includes(bookId)) {
     return res.status(400).json({ message: "Book already added to favorites" });
   }
-  user.favouriteBooks.push( bookId)
-  await user.save()
-  return res.status(201).json({message : "Book added to favorites"})
+  user.favouriteBooks.push(bookId);
+  await user.save();
 
-}
+  const book = await Book.findByIdAndUpdate(
+    bookId,
+    { $addToSet: { likedBy: userId } },
+    { new: true }
+  );
 
-export { getAllUsers, register, login,addFavoriteBooks };
+  book.totalLikes = book.likedBy.length;
+  book.save();
+  if (book === null) {
+    return res.status(401).json({ message: "Book not valid" });
+  }
 
+  return res.status(201).json({ message: "Book added to favorites" });
+};
+
+const removeFavoriteBooks = async (req, res) => {
+  const { userId, bookId } = req.body;
+  const user = await User.findById(userId);
+  if (!user) {
+    return res.json({ message: "user doesnot exit" });
+  }
+  if (!user.favouriteBooks.includes(bookId)) {
+    return res.status(401).json({ message: "Book not added to favorites" });
+  }
+  user.favouriteBooks = user.favouriteBooks.filter(
+    (id) => id.toString() !== bookId
+  );
+  await user.save();
+
+  const book = await Book.findByIdAndUpdate(
+    bookId,
+    { $pull: { likedBy: userId } }, // removes userId from likedBy array
+    { new: true } // return the updated document
+  );
+  book.totalLikes = book.likedBy.length;
+  book.save();
+  if (!book) {
+    return res.status(404).json({ message: "Book not found" });
+  }
+
+  return res.status(201).json({ message: "Book removed from favorites" });
+};
+
+export { getAllUsers, register, login, addFavoriteBooks, removeFavoriteBooks };

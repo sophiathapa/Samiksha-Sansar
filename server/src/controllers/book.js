@@ -1,5 +1,6 @@
 import { json } from "express";
 import Book from "../models/book.js";
+import User from "../models/user.js";
 
 const addBook = async (req, res) => {
   const book = await Book.findOne({

@@ -10,7 +10,14 @@ const bookSchema = new Schema({
   averageRating: Number,
   language: String,
   coverImg: String,
-  totalCounts: Number,
+  totalLikes: { type: Number, default: 0 },
+  likedBy: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  comments: [String],
 });
 
 const Book = mongoose.model("Book", bookSchema);

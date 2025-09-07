@@ -45,7 +45,7 @@
   --background: oklch(0.15 0.02 45); /* Dark warm brown */
   --foreground: oklch(0.95 0.02 85); /* Warm cream text */
   --card: oklch(0.18 0.02 45);
-  --card-foreground: oklch(0.95 0.02 85);
+  --card-foreground: oklch(95.079% 0.01994 84.562);
   --popover: oklch(0.18 0.02 45);
   --popover-foreground: oklch(0.95 0.02 85);
   --primary: oklch(0.65 0.15 35); /* Lighter terracotta for dark mode */

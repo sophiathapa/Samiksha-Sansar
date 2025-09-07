@@ -98,7 +98,6 @@ const EditCard = ({ book, onback }: editCardProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[v0] Form submitted with data:", bookData);
     // Here you would typically send the data to your API
     const formData = new FormData();
     formData.append("title", bookData.title);
@@ -112,7 +111,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
     formData.append("language", bookData.language);
     formData.append("totalCounts", bookData.totalCounts.toString());
 
-    console.log(formData);
+    
     axios
       .put(
         `${process.env.NEXT_PUBLIC_API_URL}/book/edit?id=${bookData._id}`,

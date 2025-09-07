@@ -3,14 +3,13 @@ import {
   Bookmark,
   Building,
   Calendar,
-  CircleSmall,
   Globe,
   Heart,
   Share2,
   Star,
   User,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardContent,
@@ -22,26 +21,40 @@ import {
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
+import {
+  addLikedBook,
+  removeLikedBook,
+} from "@/lib/redux/features/user/userSlice";
 
 const BookDetailCard = ({ book, onBack }) => {
-  const userId  = useSelector((state)=> state.user.id)
-  console.log(userId)
-
-  const handleFavorite = async(bookId)=>{
+  const user = useSelector((state) => state.user);
+  const { likedBooks, id: userId } = user;
+  const dispatch = useDispatch();
+  const handleFavorite = async (bookId) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/favorite`,{
-        bookId : bookId,
-        userId : userId,
-      })
+      if (!likedBooks?.includes(bookId)) {
+        dispatch(addLikedBook(bookId));
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/favorite`, {
+          bookId: bookId,
+          userId: userId,
+        });
 
-      alert("Book added to favorites")
-
-    } catch(error){
-      alert(error?.response?.data?.message)
+        console.log(likedBooks);
+        alert("Book added to favorites");
+      } else {
+        dispatch(removeLikedBook(bookId));
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removefavorite`, {
+          bookId: bookId,
+          userId: userId,
+        });
+        alert("Book removed from favorites");
+      }
+    } catch (error) {
+      alert(error?.response?.data?.message);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-10">
@@ -67,71 +80,83 @@ const BookDetailCard = ({ book, onBack }) => {
             </div>
           </CardContent>
           <CardFooter className="items-center justify-center">
-            <div className="grid grid-cols-2 gap-12">
-              <Button onClick={()=>handleFavorite(book._id)}>
-                <div className="flex gap-3 items-center">
-                  <Heart className="w-6 h-6" />
-                  <span>Favorite </span>
-                </div>
-              </Button>
+            <div className="grid grid-cols-2 gap-10">
+              <div className=" flex items-center justify-center gap-5">
+                <Button
+                  className="bg-[oklch(0.97_0.02_85)] hover:bg-[oklch(0.97_0.02_85)] border-none shadow-none hover:scale-150 transition-transform duration-200 ease-in-out"
+                  onClick={() => {
+                    handleFavorite(book._id);
+                  }}
+                >
+                  <Heart
+                    className={`w-25 h-25 ${
+                      likedBooks?.includes(book._id)
+                        ? "fill-red-700 text-red-700"
+                        : "text-red-700"
+                    }`}
+                  />
+                </Button>
+                <span>{book.totalLikes}</span>
+              </div>
 
-              <Button>
-                <div className="flex gap-3 items-center">
-                  <Share2 className="w-6 h-6" />
-                  <span>Share </span>
-                </div>
+              <Button className="bg-[oklch(0.97 0.02 85)] shadow-none border-none pointer-events-none">
+                <Share2 className="w-25 h-25 text-red-700 " />
               </Button>
             </div>
           </CardFooter>
         </Card>
-        
-        <div className="col-span-2">
-        <Card >
-          <CardHeader>
-            <CardTitle className="text-2xl">{book.title.toUpperCase()}</CardTitle>
-            <CardDescription className="flex gap-2 items-center">
-              <User className="w-4 h-4" />
-              {book.author}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>{book.description}</CardContent>
-          <Separator />
-          <div className="grid grid-cols-2 gap-4 p-5">
-            <div className="flex flex-col">
-              <h3 className="font-bold">Publication Details</h3>
-              <div className="flex gap-2 items-center">
-                <Building className="text-muted-foreground w-4 h-4" />
-                <span className="text-muted-foreground">Publisher:</span>
-                <span>{book.publisher}</span>
-              </div>
-              <div className="flex gap-2 items-center ">
-                <Calendar className="text-muted-foreground w-4 h-4" />
-                <span className="text-muted-foreground">Published:</span>
-                <span>{book.publishedDate?.split("T")[0] || ""}</span>
-              </div>
-            </div>
 
-            <div className="flex flex-col">
-              <h3 className="font-bold">Book Details</h3>
-              <div className="flex gap-2 items-center">
-                <Globe className="text-muted-foreground w-4 h-4" />
-                <span className="text-muted-foreground">Language:</span>
-                <span>{book.language}</span>
+        <div className="col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-2xl">
+                {book.title.toUpperCase()}
+              </CardTitle>
+              <CardDescription className="flex gap-2 items-center">
+                <User className="w-4 h-4" />
+                {book.author}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>{book.description}</CardContent>
+            <Separator />
+            <div className="grid grid-cols-2 gap-4 p-5">
+              <div className="flex flex-col">
+                <h3 className="font-bold">Publication Details</h3>
+                <div className="flex gap-2 items-center">
+                  <Building className="text-muted-foreground w-4 h-4" />
+                  <span className="text-muted-foreground">Publisher:</span>
+                  <span>{book.publisher}</span>
+                </div>
+                <div className="flex gap-2 items-center ">
+                  <Calendar className="text-muted-foreground w-4 h-4" />
+                  <span className="text-muted-foreground">Published:</span>
+                  <span>{book.publishedDate?.split("T")[0] || ""}</span>
+                </div>
               </div>
-              <div className="flex gap-2 ">
-                <Bookmark className="text-muted-foreground w-4 h-4 mt-1 " />
-                <div className="grid grid-cols-[auto_1fr] gap-2 ">
-                  <span className="text-muted-foreground ">Genre:</span>
-                  <div className="flex gap-1 flex-wrap mt-1">
-                    {book.genre.map((val, idx) => (
-                      <Badge className="bg-red-700">{val}</Badge>
-                    ))}
+
+              <div className="flex flex-col">
+                <h3 className="font-bold">Book Details</h3>
+                <div className="flex gap-2 items-center">
+                  <Globe className="text-muted-foreground w-4 h-4" />
+                  <span className="text-muted-foreground">Language:</span>
+                  <span>{book.language}</span>
+                </div>
+                <div className="flex gap-2 ">
+                  <Bookmark className="text-muted-foreground w-4 h-4 mt-1 " />
+                  <div className="grid grid-cols-[auto_1fr] gap-2 ">
+                    <span className="text-muted-foreground ">Genre:</span>
+                    <div className="flex gap-1 flex-wrap mt-1">
+                      {book.genre.map((val, idx) => (
+                        <Badge key={idx} className="bg-red-700">
+                          {val}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
         </div>
       </div>
     </div>

@@ -99,7 +99,6 @@ export default function AddBookForm() {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        console.log(e.target);
         setImagePreview(result);
         setBookData((prev) => ({ ...prev, coverImg: file }));
       };
@@ -109,7 +108,6 @@ export default function AddBookForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("[v0] Form submitted with data:", bookData);
     // Here you would typically send the data to your API
     const formData = new FormData();
     formData.append("title", bookData.title);
