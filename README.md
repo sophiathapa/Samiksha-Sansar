@@ -33,7 +33,7 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 
 ### ✨ Phase 2 – Improved Functionality
 
-- [ ] Ratings and reviews by readers
+- [x] Ratings and reviews by readers
 - [ ] Profile uploads (Cloudinary/Firebase)
 - [ ] Reading Status Management
 - [ ] Custom Book Lists/Shelves

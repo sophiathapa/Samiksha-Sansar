@@ -98,7 +98,7 @@ const removeFavoriteBooks = async (req, res) => {
     { $pull: { likedBy: userId } }, // removes userId from likedBy array
     { new: true } // return the updated document
   );
-  book.totalLikes = book.likedBy.length;
+  book.totalLikes = 0;
   book.save();
   if (!book) {
     return res.status(404).json({ message: "Book not found" });
@@ -106,5 +106,7 @@ const removeFavoriteBooks = async (req, res) => {
 
   return res.status(201).json({ message: "Book removed from favorites" });
 };
+
+
 
 export { getAllUsers, register, login, addFavoriteBooks, removeFavoriteBooks };

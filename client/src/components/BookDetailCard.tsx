@@ -9,7 +9,7 @@ import {
   Star,
   User,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -27,16 +27,22 @@ import {
   addLikedBook,
   removeLikedBook,
 } from "@/lib/redux/features/user/userSlice";
+import { Textarea } from "./ui/textarea";
+import { Comment } from "./Comments";
+
 
 const BookDetailCard = ({ book, onBack }) => {
   const user = useSelector((state) => state.user);
+  const [comment, setComment] = useState("");
   const { likedBooks, id: userId } = user;
+  const [reviews, setReviews] = useState([]);
   const dispatch = useDispatch();
+
   const handleFavorite = async (bookId) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/favorite`, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
           bookId: bookId,
           userId: userId,
         });
@@ -45,7 +51,7 @@ const BookDetailCard = ({ book, onBack }) => {
         alert("Book added to favorites");
       } else {
         dispatch(removeLikedBook(bookId));
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removefavorite`, {
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
           bookId: bookId,
           userId: userId,
         });
@@ -55,6 +61,38 @@ const BookDetailCard = ({ book, onBack }) => {
       alert(error?.response?.data?.message);
     }
   };
+
+  const handleReview = async () => {
+    const bookId = book._id;
+
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/review`, {
+        userId,
+        bookId,
+        comment,
+      });
+
+      alert("Review added");
+      setComment("");
+    } catch (error) {
+      alert(error?.response?.data?.message);
+    }
+  };
+
+  const getComments = async () => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book._id}`
+      );
+      setReviews(data);
+    } catch (error) {
+      alert(error?.response?.data?.message);
+    }
+  };
+
+  useEffect(() => {
+    getComments();
+  }, []);
 
   return (
     <div className="flex flex-col gap-10">
@@ -158,6 +196,25 @@ const BookDetailCard = ({ book, onBack }) => {
             </div>
           </Card>
         </div>
+      </div>
+      <div className="flex flex-col">
+        <Textarea
+          value={comment}
+          placeholder="write review"
+          className="h-30 mb-5"
+          onChange={(e) => setComment(e.target.value)}
+        />
+        <Button onClick={handleReview}>Add Review</Button>
+      </div>
+
+      <div>
+        {reviews && (
+          <div>
+            {reviews.map((review, id) => (
+              <Comment key={id} review={review} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
