@@ -36,25 +36,26 @@ const BookDetailCard = ({ book, onBack }) => {
   const [comment, setComment] = useState("");
   const { likedBooks, id: userId } = user;
   const [reviews, setReviews] = useState([]);
+  const [totalLikes, setTotalLikes] = useState(book.totalLikes || 0);
   const dispatch = useDispatch();
 
   const handleFavorite = async (bookId) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
+        const {data} = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
           bookId: bookId,
           userId: userId,
         });
-
-        console.log(likedBooks);
+        setTotalLikes(data)
         alert("Book added to favorites");
       } else {
         dispatch(removeLikedBook(bookId));
-        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
+        const {data} = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
           bookId: bookId,
           userId: userId,
         });
+        setTotalLikes(data)
         alert("Book removed from favorites");
       }
     } catch (error) {
@@ -92,7 +93,7 @@ const BookDetailCard = ({ book, onBack }) => {
 
   useEffect(() => {
     getComments();
-  }, []);
+  }, [comment]);
 
   return (
     <div className="flex flex-col gap-10">
@@ -134,7 +135,7 @@ const BookDetailCard = ({ book, onBack }) => {
                     }`}
                   />
                 </Button>
-                <span>{book.totalLikes}</span>
+                <span>{totalLikes}</span>
               </div>
 
               <Button className="bg-[oklch(0.97 0.02 85)] shadow-none border-none pointer-events-none">
@@ -209,7 +210,7 @@ const BookDetailCard = ({ book, onBack }) => {
 
       <div>
         {reviews && (
-          <div>
+          <div className="space-y-4">
             {reviews.map((review, id) => (
               <Comment key={id} review={review} />
             ))}
