@@ -1,8 +1,8 @@
 import  Header from "@/components/homePage/Header"
 import { Hero } from "@/components/homePage/Hero"
 import { Features } from "@/components/homePage/Features"
-import { FeaturedBooks } from "@/components/homePage/FeaturedBooks"
-import { MonthlyMeetup, CallToAction } from "@/components/homePage/meetup"
+import  {FeaturedBooks}  from "@/components/homePage/FeaturedBooks"
+import { MonthlyMeetup } from "@/components/homePage/meetup"
 
 export default function HomePage() {
   return (
@@ -13,7 +13,6 @@ export default function HomePage() {
         <Features />
         <FeaturedBooks />
         <MonthlyMeetup />
-        <CallToAction />
       </main>
 
       <footer className="border-t border-border py-8">

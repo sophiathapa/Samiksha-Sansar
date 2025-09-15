@@ -20,7 +20,7 @@ const Header = () => {
           <a href="#join" className="text-foreground hover:text-foreground transition-colors">Join</a>
         </div>
         <div className="flex items-center gap-2">
-          <Link href="/register">
+          <Link href="/login">
             <Button className="bg-primary bg-primary text-primary-foreground hover:bg-primary/90">Join now</Button>
           </Link>
         </div>

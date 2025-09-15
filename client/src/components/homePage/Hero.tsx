@@ -1,6 +1,10 @@
+"use client"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+
 
 export function Hero() {
+  const router = useRouter(); 
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4">
@@ -19,8 +23,8 @@ export function Hero() {
               <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
                 Join the club
               </Button>
-              <Button size="lg" variant="outline">
-                Explore books
+              <Button size="lg" variant="outline" onClick={()=> router.push("/user/bookClubAI")}>
+                Ask Book Club AI
               </Button>
             </div>
 
@@ -36,7 +40,7 @@ export function Hero() {
           <div className="relative">
             <div className="rounded-2xl overflow-hidden border border-border">
               <img
-                src="/placeholder.svg?height=500&width=600"
+                src="hero-book-club.jpg"
                 alt="Cozy book club gathering in a cafe with readers discussing books"
                 className="w-full h-auto"
               />

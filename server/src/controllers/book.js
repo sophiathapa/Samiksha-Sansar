@@ -27,6 +27,12 @@ const getAllBook = async (req, res) => {
   res.status(200).json(books);
 };
 
+const getFeaturedBook = async (req, res) => {
+  const books = await Book.find({featured : true});
+  res.status(200).json(books);
+};
+
+
 const deleteBook = async (req, res) => {
   await Book.deleteOne({ _id: req.query.id });
   res.status(200).json("Book deleted");
@@ -77,4 +83,5 @@ export {
   searchBook,
   getBookByGenre,
   editBook,
+  getFeaturedBook,
 };

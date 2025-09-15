@@ -8,6 +8,7 @@ const bookSchema = new Schema({
   description: String,
   genre: [String],
   averageRating: Number,
+  featured : Boolean,
   language: String,
   coverImg: String,
   totalLikes: { type: Number, default: 0 },

@@ -6,6 +6,7 @@ import {
   getBookByGenre,
   searchBook,
   editBook,
+  getFeaturedBook,
 } from "../controllers/book.js";
 import multer from "multer";
 
@@ -25,6 +26,7 @@ const upload = multer({ storage: storage });
 
 router.post("/book", upload.single("coverImg"), addBook);
 router.get("/books", getAllBook);
+router.get("/featuredbooks", getFeaturedBook);
 router.get("/books/search", searchBook);
 router.get("/books/genre", getBookByGenre);
 router.delete("/book", deleteBook);
