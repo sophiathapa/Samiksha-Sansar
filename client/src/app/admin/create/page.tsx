@@ -23,7 +23,6 @@ interface BookFormData {
   averageRating: number;
   language: string;
   coverImg: string;
-  totalCounts: number;
 }
 
 export default function AddBookForm() {
@@ -37,7 +36,6 @@ export default function AddBookForm() {
     averageRating: 0,
     language: "",
     coverImg: "",
-    totalCounts: 0,
   });
 
   const [genreInput, setGenreInput] = useState("");
@@ -119,7 +117,6 @@ export default function AddBookForm() {
     formData.append("averageRating", bookData.averageRating.toString());
     formData.append("coverImg", bookData.coverImg);
     formData.append("language", bookData.language);
-    formData.append("totalCounts", bookData.totalCounts.toString());
 
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/book`, formData)
@@ -399,20 +396,7 @@ export default function AddBookForm() {
                       >
                         Total Copies
                       </Label>
-                      <Input
-                        id="totalCounts"
-                        type="number"
-                        placeholder="Number of copies"
-                        value={bookData.totalCounts || ""}
-                        onChange={(e) =>
-                          handleInputChange(
-                            "totalCounts",
-                            Number.parseInt(e.target.value) || 0
-                          )
-                        }
-                        className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50"
-                        min="0"
-                      />
+                     
                     </div>
 
                     <div className="relative space-y-2">

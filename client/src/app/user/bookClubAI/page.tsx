@@ -2,13 +2,14 @@
 import { useState } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Button } from "@/components/ui/button";
 
 export default function BookClubAI() {
   const [query, setQuery] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [coverImg, setCoverImg] = useState("");
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -20,12 +21,31 @@ export default function BookClubAI() {
         `${process.env.NEXT_PUBLIC_API_URL}/bookAI`,
         { query }
       );
-      setAnswer(res.data.message);
+
+      const cleaned = res.data.message
+        .replace(/^```json\s*/, "") // remove starting ```json
+        .replace(/\s*```$/, ""); // remove ending ```
+
+      // Parse JSON
+      const data = JSON.parse(cleaned);
+      setAnswer(data.message);
+      fetchImageName(data.title);
+      setTitle(data.title);
     } catch (err) {
-      console.error(err);
       setAnswer("⚠️ Error: Could not get a response.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchImageName = async (title : String) => {
+    try {
+      const { data } = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/getImageName?title=${title}`
+      );
+      setCoverImg(data);
+    } catch (error) {
+      setCoverImg("");
     }
   };
 
@@ -47,9 +67,20 @@ export default function BookClubAI() {
       {/* Chat messages area */}
       <div className="flex-1 overflow-y-auto p-4">
         {answer && (
-          <div className="mt-4 p-3  rounded-xl">
-            <ReactMarkdown>{answer}</ReactMarkdown>
-          </div>
+          <>
+            <div className="mt-4 p-4 rounded-xl shadow-sm">
+              {coverImg && (
+                <img
+                  className=" flex w-40 h-50 rounded-md shadow-md justify-center mb-10"
+                  src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${coverImg}`}
+                  alt={title}
+                />
+              )}
+              <div className="prose max-w-none">
+                <ReactMarkdown>{answer}</ReactMarkdown>
+              </div>
+            </div>
+          </>
         )}
       </div>
 

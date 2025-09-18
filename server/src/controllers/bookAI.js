@@ -10,15 +10,30 @@ const searchQuery = async (req, res) => {
         contents: [
           {
             parts: [
-              {
-                text: `Provide a detailed summary for the book  ${query}. 
-                        Please format the response using **Markdown** with:
-                        - Clear headings for sections   (Overview, Key Themes, Strengths, Criticisms, Discussion Points)
-                        - Bold for subheadings
-                        - Bullet points for lists
-                        - Short paragraphs for readability
-                        `,
-              },
+                  {
+  text: `Summarize the book "${query}" and return ONLY valid JSON with the following structure:
+
+{
+  "title": "Book title here",
+  "message": "Markdown-formatted summary including author, genre, published, summary, and similar books"
+}
+
+Requirements:
+1. Do NOT include any code block markers (no \`\`\`).
+2. "title" must be only the name of the book.
+3. "message" must include these Markdown sections:
+   - # Title
+   - - **Author:**  
+   - - **Genre:**  
+   - - **Published:**  
+   - ## Summary
+   - ## Similar Books
+4. Include 5 similar books as bullet points.
+5. The output must be valid JSON that can be parsed directly with JSON.parse().
+6. Do not include any explanations, text, or formatting outside the JSON object.`
+}
+
+
             ],
           },
         ],

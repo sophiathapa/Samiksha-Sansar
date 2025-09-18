@@ -7,6 +7,9 @@ import {
   searchBook,
   editBook,
   getFeaturedBook,
+  getImageName,
+  borrowBook,
+  reserveBook,
 } from "../controllers/book.js";
 import multer from "multer";
 
@@ -30,6 +33,9 @@ router.get("/featuredbooks", getFeaturedBook);
 router.get("/books/search", searchBook);
 router.get("/books/genre", getBookByGenre);
 router.delete("/book", deleteBook);
+router.get("/getImageName", getImageName);
 router.put("/book/edit", upload.single("coverImg"), editBook);
+router.patch("/borrowBook", borrowBook);
+router.patch("/reserveBook", reserveBook);
 
 export default router;

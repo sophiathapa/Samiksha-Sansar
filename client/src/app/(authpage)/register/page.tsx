@@ -40,7 +40,7 @@ const Singin = () => {
       router.push('/login')
     }
     }
-    catch(error){
+    catch(error: any){
       alert(error?.response?.data?.message)
     }
   } 

@@ -12,6 +12,13 @@ const bookSchema = new Schema({
   language: String,
   coverImg: String,
   totalLikes: { type: Number, default: 0 },
+  status : {
+    type: String,
+    enum: ["available","borrowed","reserved"],
+    default: "available",
+  },
+  borrowerId: { type: Schema.Types.ObjectId, ref: "User" },
+  reservedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
   
 });
 

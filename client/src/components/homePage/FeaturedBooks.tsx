@@ -2,8 +2,14 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+interface Book {
+  title : string;
+  coverImg: string;
+  author : string;
+}
+
 export function FeaturedBooks() {
-  const [featuredBooks, setFeaturedBooks] = useState([]);
+  const [featuredBooks, setFeaturedBooks] = useState<Book[]>([]);
 
   const fetchFeaturedBooks = async () => {
     const { data } = await axios.get(

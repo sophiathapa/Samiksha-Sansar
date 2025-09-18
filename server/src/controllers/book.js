@@ -28,10 +28,9 @@ const getAllBook = async (req, res) => {
 };
 
 const getFeaturedBook = async (req, res) => {
-  const books = await Book.find({featured : true});
+  const books = await Book.find({ featured: true });
   res.status(200).json(books);
 };
-
 
 const deleteBook = async (req, res) => {
   await Book.deleteOne({ _id: req.query.id });
@@ -76,6 +75,56 @@ const editBook = async (req, res) => {
   return res.status(200).json("Book updated");
 };
 
+const getImageName = async (req, res) => {
+  const { title } = req.query;
+  const book = await Book.findOne({ title: title });
+  if (!book) {
+    return res.status(401).json({ message: "no book in that name" });
+  }
+  return res.status(200).json(book.coverImg);
+};
+
+const borrowBook = async (req, res) => {
+  const { userId, bookId } = req.body;
+  const user = await User.exists({ _id: userId });
+  if (!user) {
+    return res.status(401).json({ message: "invalid user" });
+  }
+
+  const book = await Book.findOneAndUpdate(
+    { _id: bookId },
+    {
+      $set: { borrowerId: userId, status: "borrowed" },
+    },
+    { new: true }
+  );
+  if (!book) {
+    return res.status(401).json({ message: "book not found" });
+  }
+  return res.status(201).json(book.status);
+};
+
+const reserveBook = async (req, res) => {
+  const { userId, bookId } = req.body;
+  const user = await User.exists({ _id: userId });
+  if (!user) {
+    return res.status(401).json({ message: "invalid user" });
+  }
+
+  const book = await Book.findOneAndUpdate(
+    { _id: bookId },
+    {
+      $push: { reservedBy: userId },
+      $set: { status: "reserved" },
+    },
+    { new: true }
+  );
+  if (!book) {
+    return res.status(401).json({ message: "book not found" });
+  }
+  return res.status(201).json(book.status);
+};
+
 export {
   addBook,
   deleteBook,
@@ -84,4 +133,7 @@ export {
   getBookByGenre,
   editBook,
   getFeaturedBook,
+  getImageName,
+  borrowBook,
+  reserveBook,
 };

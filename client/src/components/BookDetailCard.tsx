@@ -29,17 +29,42 @@ import {
 } from "@/lib/redux/features/user/userSlice";
 import { Textarea } from "./ui/textarea";
 import { Comment } from "./Comments";
+import { string } from "yup";
+
+export type Book = {
+  title: string;
+  author: string;
+  publishedDate: string;
+  publisher: string;
+  description: string;
+  genre: string[];
+  averageRating: number;
+  language: string;
+  coverImg: string;
+  totalLikes: number;
+  _id : string;
+  status : string;
+  borrowerId : {};
+  reservedBy : string [];
+};
+
+interface BookProps {
+  book: Book;
+  onBack: () => void;
+}
 
 
-const BookDetailCard = ({ book, onBack }) => {
+
+const BookDetailCard = ({ book, onBack } : BookProps) => {
   const user = useSelector((state) => state.user);
   const [comment, setComment] = useState("");
   const { likedBooks, id: userId } = user;
   const [reviews, setReviews] = useState([]);
   const [totalLikes, setTotalLikes] = useState(book.totalLikes || 0);
+  const [status, setStatus] = useState(book.status || "");
   const dispatch = useDispatch();
 
-  const handleFavorite = async (bookId) => {
+  const handleFavorite = async (bookId : string) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
@@ -58,7 +83,7 @@ const BookDetailCard = ({ book, onBack }) => {
         setTotalLikes(data)
         alert("Book removed from favorites");
       }
-    } catch (error) {
+    } catch (error: any) {
       alert(error?.response?.data?.message);
     }
   };
@@ -75,10 +100,40 @@ const BookDetailCard = ({ book, onBack }) => {
 
       alert("Review added");
       setComment("");
-    } catch (error) {
+    } catch (error : any) {
       alert(error?.response?.data?.message);
     }
   };
+
+  const handleBookAction = async(bookStatus: string, bookId: string, userId : string)=>{
+  switch(bookStatus){
+      case "available":
+        try{
+         const {data} =  await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`,{bookId,userId})
+         setStatus(data)
+          alert("Book Borrowed")
+        }
+        catch (error : any){
+          alert(error?.response?.data?.message)
+        }
+        break;
+      case "borrowed":
+        try{
+         const {data} =  await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/reserveBook`,{bookId,userId})
+         setStatus(data)
+          alert("Book Reserved")
+        }
+        catch (error : any){
+          alert(error?.response?.data?.message)
+        }
+        break;
+      case "reserved":
+        break;
+      default:
+        alert("Unknown Status");
+  }
+
+  }
 
   const getComments = async () => {
     try {
@@ -86,8 +141,8 @@ const BookDetailCard = ({ book, onBack }) => {
         `${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book._id}`
       );
       setReviews(data);
-    } catch (error) {
-      alert(error?.response?.data?.message);
+    } catch (error : any) {
+      alert(error ?.response?.data?.message);
     }
   };
 
@@ -107,12 +162,14 @@ const BookDetailCard = ({ book, onBack }) => {
       </div>
       <div className=" grid grid-cols-3 gap-5">
         <Card>
-          <CardContent className="flex flex-col gap-3">
+          <CardContent className="flex flex-col gap-4 justify-center items-center">
             <img
               className="w-80 h-80 rounded-md shadow-md"
               src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
               alt={book.title}
             />
+
+            <Badge className="bg-green-200 text-black">{status}</Badge>
             <div className="flex gap-2 justify-center items-center">
               <Star className="fill-yellow-400 text-yellow-400" />
               <span>{book.averageRating}</span>
@@ -195,6 +252,11 @@ const BookDetailCard = ({ book, onBack }) => {
                 </div>
               </div>
             </div>
+            <Separator/>
+            <div className="flex gap-5 px-5">
+              <Button onClick={()=>handleBookAction(status,book._id, userId)}> {status === "available" ? "Borrow Book" : status === "borrowed" ? "Reserve Book" : "Already Reserved" } </Button>
+              <Button> Add to Reading List </Button>
+            </div>
           </Card>
         </div>
       </div>
@@ -205,7 +267,7 @@ const BookDetailCard = ({ book, onBack }) => {
           className="h-30 mb-5"
           onChange={(e) => setComment(e.target.value)}
         />
-        <Button onClick={handleReview}>Add Review</Button>
+        <Button onClick={(e)=>handleReview(e)}>Add Review</Button>
       </div>
 
       <div>

@@ -45,7 +45,7 @@ const Login = () => {
           setUser({ name: firstName, id: _id, email: email, token: token })
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       alert(error?.response?.data?.message);
     }
   };
