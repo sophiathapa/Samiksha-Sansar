@@ -101,7 +101,7 @@ const likeBook = async (req, res) => {
 
   return res
     .status(200)
-    .json(book.totalLikes);
+    .json(book);
 };
 
 const unlikeBook = async (req, res) => {
@@ -130,7 +130,18 @@ const unlikeBook = async (req, res) => {
   book.totalLikes = totalLikes[0] ? totalLikes[0].total : 0;
   await book.save();
 
-  return res.status(200).json( book.totalLikes);
+  return res.status(200).json( book);
 };
 
-export { addReview, getReviews, likeBook, unlikeBook };
+const userlikedbooks = async (req,res)=>{
+  const {userId} = req.query;
+  const user = await User.exists({_id : userId})
+  if(!user){
+    return res.status(401).json({message: "User ivalid"})
+  }
+  const likedReviews = await Review.find({userId: userId, liked: 'true'})
+  const likedBookIds = [...new Set(likedReviews.map(review => review.bookId.toString()))];    //have unique bookId in array
+  return res.status(200).json(likedBookIds)
+}
+
+export { addReview, getReviews, likeBook, unlikeBook, userlikedbooks};

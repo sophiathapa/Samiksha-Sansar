@@ -10,6 +10,7 @@ import {
   getImageName,
   borrowBook,
   reserveBook,
+  getBorrowedBook,
 } from "../controllers/book.js";
 import multer from "multer";
 
@@ -37,5 +38,6 @@ router.get("/getImageName", getImageName);
 router.put("/book/edit", upload.single("coverImg"), editBook);
 router.patch("/borrowBook", borrowBook);
 router.patch("/reserveBook", reserveBook);
+router.get("/getBorrowedBooks", getBorrowedBook);
 
 export default router;

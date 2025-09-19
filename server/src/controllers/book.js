@@ -1,4 +1,3 @@
-import { json } from "express";
 import Book from "../models/book.js";
 import User from "../models/user.js";
 
@@ -92,7 +91,7 @@ const borrowBook = async (req, res) => {
   }
 
   const book = await Book.findOneAndUpdate(
-    { _id: bookId },
+    { _id: bookId, borrowerId: null },
     {
       $set: { borrowerId: userId, status: "borrowed" },
     },
@@ -125,6 +124,13 @@ const reserveBook = async (req, res) => {
   return res.status(201).json(book.status);
 };
 
+const getBorrowedBook = async (req, res) => {
+  const { userId } = req.query;
+  const books = await Book.find({ borrowerId: userId },{_id:1});
+  const borrowedBooks = books.map((book)=> book._id.toString())
+  return res.json(borrowedBooks);
+};
+
 export {
   addBook,
   deleteBook,
@@ -136,4 +142,5 @@ export {
   getImageName,
   borrowBook,
   reserveBook,
+  getBorrowedBook,
 };
