@@ -4,7 +4,7 @@ import axios from "axios";
 // Async thunk to fetch liked books
 const fetchLikedBooks = createAsyncThunk(
   "user/fetchLikedBooks",
-  async (userId) => {
+  async (userId:string) => {
     const { data } = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/userlikedbooks?userId=${userId}`
     );
@@ -14,7 +14,7 @@ const fetchLikedBooks = createAsyncThunk(
 
 const fetchBorrowedBooks = createAsyncThunk(
   "user/fetchBorrowedBooks",
-  async (userId) => {
+  async (userId:string) => {
     const { data } = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/getBorrowedBooks?userId=${userId}`
     );
@@ -22,4 +22,14 @@ const fetchBorrowedBooks = createAsyncThunk(
   }
 );
 
-export { fetchLikedBooks, fetchBorrowedBooks };
+const fetchReservedBooks = createAsyncThunk(
+  "user/fetchReservedBooks",
+  async (userId:string) => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/getReservedBooks?userId=${userId}`
+    );
+    return data; // array of bookIds
+  }
+);
+
+export { fetchLikedBooks, fetchBorrowedBooks, fetchReservedBooks };

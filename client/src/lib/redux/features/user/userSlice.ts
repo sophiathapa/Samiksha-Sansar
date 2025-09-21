@@ -1,17 +1,33 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { fetchBorrowedBooks, fetchLikedBooks } from "./userThunks";
+import { createSlice } from "@reduxjs/toolkit";
+import {
+  fetchBorrowedBooks,
+  fetchLikedBooks,
+  fetchReservedBooks,
+} from "./userThunks";
+
+export interface UserState {
+  id: string;
+  name: string;
+  email: string;
+  token: string;
+  likedBooks: string[];
+  borrowedBooks: string[];
+  reservedBooks: string[];
+}
+
+const initialState: UserState = {
+  id: "",
+  name: "",
+  email: "",
+  token: "",
+  likedBooks: [],
+  borrowedBooks: [],
+  reservedBooks: [],
+};
 
 export const userSlice = createSlice({
   name: "user",
-  initialState: {
-    id: "",
-    name: "",
-    email: "",
-    token: "",
-    likedBooks: [],
-    borrowedBooks: [],
-    reservedBook: [],
-  },
+  initialState,
   reducers: {
     setUser: (state, action) => {
       state.id = action.payload.id;
@@ -40,21 +56,26 @@ export const userSlice = createSlice({
       );
     },
 
-    reserveBook: (state, action) => {
-      state.reservedBook.push(action.payload);
+    addReserveBook: (state, action) => {
+      if (!state.reservedBooks.includes(action.payload)) {
+        state.reservedBooks.push(action.payload);
+      }
     },
     removeReservedBook: (state, action) => {
-      state.reservedBook = state.reservedBook.filter(
+      state.reservedBooks = state.reservedBooks.filter(
         (id) => id !== action.payload
       );
     },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchLikedBooks.fulfilled, (state, action) => {
-      state.likedBooks = action.payload; // overwrite with API data
+      state.likedBooks = action.payload;
     });
     builder.addCase(fetchBorrowedBooks.fulfilled, (state, action) => {
-      state.borrowedBooks = action.payload; // overwrite with API data
+      state.borrowedBooks = action.payload;
+    });
+    builder.addCase(fetchReservedBooks.fulfilled, (state, action) => {
+      state.reservedBooks = action.payload;
     });
   },
 });
@@ -66,6 +87,8 @@ export const {
   removeLikedBook,
   addBorrowedBook,
   removeBorrowedBook,
+  addReserveBook,
+  removeReservedBook,
 } = userSlice.actions;
 
 export default userSlice.reducer;

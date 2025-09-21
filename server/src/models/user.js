@@ -16,7 +16,7 @@ const userSchema = new Schema({
         ref: 'Book',
     }],
 
-  savedBooks : [{
+  readingList : [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Book',
     }],

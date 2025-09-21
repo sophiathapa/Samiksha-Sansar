@@ -52,4 +52,25 @@ const login = async (req, res) => {
     .json({ message: "Login successful", token, user: user, isLoggedIn: true });
 };
 
-export { getAllUsers, register, login };
+const addBookToRead = async (req, res) => {
+  const { bookId, userId } = req.body;
+  const user = await User.findOne({_id: userId});
+  const book = user.readingList.includes(bookId);
+  if (!book) {
+    await User.findOneAndUpdate(
+      {
+        _id: userId,
+      },
+      {
+        $push: { readingList: bookId },
+      }
+    );
+
+    return res.status(201).json({ message: "Book added to reading list" });
+  } else
+    return res
+      .status(200)
+      .json({ message: "Book already added to reading list" });
+};
+
+export { getAllUsers, register, login, addBookToRead };

@@ -24,12 +24,16 @@ import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import {
+  addBorrowedBook,
   addLikedBook,
+  addReserveBook,
+  removeBorrowedBook,
   removeLikedBook,
+  removeReservedBook,
 } from "@/lib/redux/features/user/userSlice";
 import { Textarea } from "./ui/textarea";
 import { Comment } from "./Comments";
-import { string } from "yup";
+import { RootState } from "@/lib/redux/store";
 
 export type Book = {
   title: string;
@@ -42,10 +46,10 @@ export type Book = {
   language: string;
   coverImg: string;
   totalLikes: number;
-  _id : string;
-  status : string;
-  borrowerId : {};
-  reservedBy : string [];
+  _id: string;
+  status: string;
+  borrowerId: {};
+  reservedBy: string[];
 };
 
 interface BookProps {
@@ -53,35 +57,38 @@ interface BookProps {
   onBack: () => void;
 }
 
-
-
-const BookDetailCard = ({ book, onBack } : BookProps) => {
-  const user = useSelector((state) => state.user);
+const BookDetailCard = ({ book, onBack }: BookProps) => {
+  const user = useSelector((state: RootState) => state.user);
   const [comment, setComment] = useState("");
-  const { likedBooks, id: userId } = user;
+  const { likedBooks, borrowedBooks, id: userId, reservedBooks } = user;
   const [reviews, setReviews] = useState([]);
   const [totalLikes, setTotalLikes] = useState(book.totalLikes || 0);
   const [status, setStatus] = useState(book.status || "");
   const dispatch = useDispatch();
 
-  const handleFavorite = async (bookId : string) => {
+  const handleLike = async (bookId: string) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
-        const {data} = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
-          bookId: bookId,
-          userId: userId,
-        });
-        setTotalLikes(data)
-        alert("Book added to favorites");
+        const { data } = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/like`,
+          {
+            bookId: bookId,
+            userId: userId,
+          }
+        );
+
+        setTotalLikes(data.totalLikes);
       } else {
         dispatch(removeLikedBook(bookId));
-        const {data} = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
-          bookId: bookId,
-          userId: userId,
-        });
-        setTotalLikes(data)
-        alert("Book removed from favorites");
+        const { data } = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/unlike`,
+          {
+            bookId: bookId,
+            userId: userId,
+          }
+        );
+        setTotalLikes(data.totalLikes);
       }
     } catch (error: any) {
       alert(error?.response?.data?.message);
@@ -100,40 +107,86 @@ const BookDetailCard = ({ book, onBack } : BookProps) => {
 
       alert("Review added");
       setComment("");
-    } catch (error : any) {
+    } catch (error: any) {
       alert(error?.response?.data?.message);
     }
   };
 
-  const handleBookAction = async(bookStatus: string, bookId: string, userId : string)=>{
-  switch(bookStatus){
-      case "available":
-        try{
-         const {data} =  await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`,{bookId,userId})
-         setStatus(data)
-          alert("Book Borrowed")
-        }
-        catch (error : any){
-          alert(error?.response?.data?.message)
-        }
-        break;
-      case "borrowed":
-        try{
-         const {data} =  await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/reserveBook`,{bookId,userId})
-         setStatus(data)
-          alert("Book Reserved")
-        }
-        catch (error : any){
-          alert(error?.response?.data?.message)
-        }
-        break;
-      case "reserved":
-        break;
-      default:
-        alert("Unknown Status");
-  }
+  const handleBookAction = async (
+    bookStatus: string,
+    bookId: string,
+    userId: string
+  ) => {
+    if (bookStatus === "available" && !borrowedBooks.includes(bookId)) {
+      try {
+        dispatch(addBorrowedBook(bookId));
+        const { data } = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/borrowBook`,
+          { bookId, userId }
+        );
+        setStatus(data);
+        alert("Book Borrowed");
+      } catch (error: any) {
+        alert(error?.response?.data?.message);
+      }
+    } else if (bookStatus === "borrowed" && borrowedBooks.includes(bookId)) {
+      try {
+        dispatch(removeBorrowedBook(bookId));
 
-  }
+        const { data } = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/removeBorrowedBooks`,
+          {
+            bookId: bookId,
+            userId: userId,
+          }
+        );
+        setStatus(data);
+        alert("cancel borrow");
+      } catch (error: any) {
+        alert(error?.response?.data?.message);
+      }
+    } else if (bookStatus === "borrowed" && !reservedBooks.includes(bookId)) {
+      try {
+        dispatch(addReserveBook(bookId));
+        await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/reserveBook`, {
+          bookId,
+          userId,
+        });
+        alert("Book Reserved");
+      } catch (error: any) {
+        alert(error?.response?.data?.message);
+      }
+    } else if (bookStatus === "borrowed" && reservedBooks.includes(bookId)) {
+      try {
+        dispatch(removeReservedBook(bookId));
+        const { data } = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/removeReservedBooks`,
+          { bookId, userId }
+        );
+        setStatus(data);
+        alert(" cancel reserve");
+      } catch (error: any) {
+        alert(error?.response?.data?.message);
+      }
+    } else {
+      alert("already reserved");
+    }
+  };
+
+  const handleAddToRead = async (bookId: string, userId: string) => {
+    try {
+      const { data } = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/readingList`,
+        {
+          bookId,
+          userId,
+        }
+      );
+      alert(data.message);
+    } catch (error: any) {
+      alert(error?.response?.data?.message);
+    }
+  };
 
   const getComments = async () => {
     try {
@@ -141,8 +194,8 @@ const BookDetailCard = ({ book, onBack } : BookProps) => {
         `${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book._id}`
       );
       setReviews(data);
-    } catch (error : any) {
-      alert(error ?.response?.data?.message);
+    } catch (error: any) {
+      alert(error?.response?.data?.message);
     }
   };
 
@@ -181,7 +234,7 @@ const BookDetailCard = ({ book, onBack } : BookProps) => {
                 <Button
                   className="bg-[oklch(0.97_0.02_85)] hover:bg-[oklch(0.97_0.02_85)] border-none shadow-none hover:scale-150 transition-transform duration-200 ease-in-out"
                   onClick={() => {
-                    handleFavorite(book._id);
+                    handleLike(book._id);
                   }}
                 >
                   <Heart
@@ -252,10 +305,22 @@ const BookDetailCard = ({ book, onBack } : BookProps) => {
                 </div>
               </div>
             </div>
-            <Separator/>
+            <Separator />
             <div className="flex gap-5 px-5">
-              <Button onClick={()=>handleBookAction(status,book._id, userId)}> {status === "available" ? "Borrow Book" : status === "borrowed" ? "Reserve Book" : "Already Reserved" } </Button>
-              <Button> Add to Reading List </Button>
+              <Button
+                onClick={() => handleBookAction(status, book._id, userId)}
+              >
+                {borrowedBooks.includes(book._id)
+                  ? "Cancel Borrow"
+                  : reservedBooks?.includes(book._id)
+                  ? "Already Reserved"
+                  : status === "available"
+                  ? "Borrow Book"
+                  : "Reserve Book"}
+              </Button>
+              <Button onClick={() => handleAddToRead(book._id, userId)}>
+                Add to Reading List
+              </Button>
             </div>
           </Card>
         </div>
@@ -267,7 +332,7 @@ const BookDetailCard = ({ book, onBack } : BookProps) => {
           className="h-30 mb-5"
           onChange={(e) => setComment(e.target.value)}
         />
-        <Button onClick={(e)=>handleReview(e)}>Add Review</Button>
+        <Button onClick={(e) => handleReview()}>Add Review</Button>
       </div>
 
       <div>

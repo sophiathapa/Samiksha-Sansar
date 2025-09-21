@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { CircleX, LogOut, Search, Settings, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import BookDetailCard from "@/components/BookDetailCard";
 import {
   DropdownMenu,
@@ -18,19 +18,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@radix-ui/react-dropdown-menu";
-import { persistor } from "@/lib/redux/store";
+import { persistor, RootState, useAppDispatch } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
+import {
+  fetchBorrowedBooks,
+  fetchLikedBooks,
+  fetchReservedBooks,
+} from "@/lib/redux/features/user/userThunks";
 
 const UserPage = () => {
   const [books, setBooks] = useState([]);
   const [genre, setGenre] = useState("All");
-  const user = useSelector((state) => state.user);
-  const { name: userName } = user;
+  const user = useSelector((state: RootState) => state.user);
+  const { name: userName, id: userId, borrowedBooks } = user;
   const [searchBooks, setSearchBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [bookByGenre, setBookByGenre] = useState([]);
   const [selectBook, setSelectBook] = useState(null);
   const router = useRouter();
+  const dispatch = useAppDispatch();
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
@@ -54,6 +60,14 @@ const UserPage = () => {
     fetchBookByGenre();
   }, [genre]);
 
+  useEffect(() => {
+    if (userId) {
+      dispatch(fetchLikedBooks(userId));
+      dispatch(fetchBorrowedBooks(userId));
+      dispatch(fetchReservedBooks(userId));
+    }
+  }, [userId,dispatch]);
+
   const handleSearchSubmit = async () => {
     const { data } = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/books/search?search=${search}`
@@ -65,6 +79,7 @@ const UserPage = () => {
     persistor.purge();
     router.push("/");
   };
+
 
   return (
     <>
@@ -242,7 +257,10 @@ const UserPage = () => {
             ) : (
               <BookDetailCard
                 book={selectBook}
-                onBack={() => setSelectBook(null)}
+                onBack={() => {
+                  fetchBook();
+                  setSelectBook(null);
+                }}
               />
             )}
           </main>
