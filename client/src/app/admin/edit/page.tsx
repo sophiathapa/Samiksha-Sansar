@@ -24,7 +24,7 @@ const Edit = () => {
     setBooks(fetchedBooks.data);
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
@@ -72,7 +72,7 @@ const Edit = () => {
                     className="pl-9"
                     aria-label="Search books"
                     value={search}
-                    onChange={handleSearch}
+                    onChange={(e)=>handleSearch(e)}
                   />
                   <CircleX
                     className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"

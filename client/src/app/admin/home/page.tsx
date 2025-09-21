@@ -24,7 +24,7 @@ const Home = () => {
     setBooks(fetchedBooks.data);
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 

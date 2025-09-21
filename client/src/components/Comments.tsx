@@ -26,7 +26,7 @@ export const Comment = ({ review }: CommentProps) => {
   const timeDisplay = (pastTime: string) => {
     const now = new Date();
     const past = new Date(pastTime);
-    const diffMs = now - past;
+    const diffMs = now.getTime() - past.getTime();
 
     const seconds = Math.floor(diffMs / 1000);
     const minutes = Math.floor(seconds / 60);
@@ -49,9 +49,9 @@ export const Comment = ({ review }: CommentProps) => {
     <div className="group bg-comment border border-comment-border rounded-lg p-4 hover:bg-comment-hover transition-colors duration-200">
       <div className="flex items-start space-x-3">
         <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-          <AvatarImage alt={`${review.userId.firstName}'s avatar`} />
+          <AvatarImage alt={`${review?.userId?.firstName}'s avatar`} />
           <AvatarFallback className="bg-primary/10 text-primary font-medium">
-            {review.userId.firstName[0].toUpperCase()}
+            {review?.userId?.firstName[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
@@ -59,7 +59,7 @@ export const Comment = ({ review }: CommentProps) => {
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
               <h4 className="text-sm font-semibold text-comment-author">
-                {review.userId.firstName + " " + review.userId.lastName}
+                {review?.userId?.firstName + " " + review?.userId?.lastName}
               </h4>
               <span className="text-xs text-comment-time">
                 {timeDisplay(review.createdAt)}

@@ -132,7 +132,6 @@ export default function AddBookForm() {
           averageRating: 0,
           language: "",
           coverImg: "",
-          totalCounts: 0,
         });
         setImagePreview(null);
       })
