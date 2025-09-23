@@ -38,7 +38,7 @@ const Login = () => {
     try {
       const { data } = await axios.post("http://localhost:8080/login", values);
       const { _id, firstName, email } = data.user;
-      const { token } = data.token;
+      const  {token } = data
       if (data.isLoggedIn) {
         router.push("/user/home");
         dispatch(

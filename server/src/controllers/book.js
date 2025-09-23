@@ -89,14 +89,18 @@ const borrowBook = async (req, res) => {
   if (!user) {
     return res.status(401).json({ message: "invalid user" });
   }
+  const book = await Book.findOne({ _id: bookId, borrowerId: null });
 
-  const book = await Book.findOneAndUpdate(
-    { _id: bookId, borrowerId: null },
-    {
-      $set: { borrowerId: userId, status: "borrowed" },
-    },
-    { new: true }
-  );
+  if (book.reservedBy.includes(userId)) {
+    book.reservedBy = book.reservedBy.filter((user) => {
+      user.toString() !== userId;
+    });
+  }
+
+  book.borrowerId = userId;
+  book.status = "unavailable";
+  book.save();
+
   if (!book) {
     return res.status(401).json({ message: "book not found" });
   }
@@ -159,7 +163,7 @@ const removeBorrowedId = async (req, res) => {
     const book = await Book.findOneAndUpdate(
       { _id: bookId, borrowerId: userId },
       { $unset: { borrowerId: "" }, $set: { status: "available" } },
-      { new: true } 
+      { new: true }
     );
 
     return res.status(200).json(book?.status);
@@ -178,7 +182,6 @@ const removeReservedBook = async (req, res) => {
       const newReservedBy = book.reservedBy.filter(
         (user) => user.toString() !== userId
       );
-      console.log(newReservedBy);
       book.reservedBy = newReservedBy;
       book.save();
     }

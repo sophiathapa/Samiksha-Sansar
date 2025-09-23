@@ -62,7 +62,7 @@ const getReviews = async (req, res) => {
   if (book === null) {
     return res.status(401).json({ message: "book not valid" });
   }
-  const reviews = await Review.find({ bookId: bookId })
+  const reviews = await Review.find({ bookId, comment: { $ne: "", $ne: null } })
     .select("userId comment createdAt")
     .populate("userId", "firstName lastName");
   if (reviews === null) {
@@ -99,9 +99,7 @@ const likeBook = async (req, res) => {
   book.totalLikes = totalLikes[0] ? totalLikes[0].total : 0;
   await book.save();
 
-  return res
-    .status(200)
-    .json(book);
+  return res.status(200).json(book);
 };
 
 const unlikeBook = async (req, res) => {
@@ -130,18 +128,20 @@ const unlikeBook = async (req, res) => {
   book.totalLikes = totalLikes[0] ? totalLikes[0].total : 0;
   await book.save();
 
-  return res.status(200).json( book);
+  return res.status(200).json(book);
 };
 
-const userlikedbooks = async (req,res)=>{
-  const {userId} = req.query;
-  const user = await User.exists({_id : userId})
-  if(!user){
-    return res.status(401).json({message: "User ivalid"})
+const userlikedbooks = async (req, res) => {
+  const { userId } = req.query;
+  const user = await User.exists({ _id: userId });
+  if (!user) {
+    return res.status(401).json({ message: "User ivalid" });
   }
-  const likedReviews = await Review.find({userId: userId, liked: 'true'})
-  const likedBookIds = [...new Set(likedReviews.map(review => review.bookId.toString()))];    //have unique bookId in array
-  return res.status(200).json(likedBookIds)
-}
+  const likedReviews = await Review.find({ userId: userId, liked: "true" });
+  const likedBookIds = [
+    ...new Set(likedReviews.map((review) => review.bookId.toString())),
+  ]; //have unique bookId in array
+  return res.status(200).json(likedBookIds);
+};
 
-export { addReview, getReviews, likeBook, unlikeBook, userlikedbooks};
+export { addReview, getReviews, likeBook, unlikeBook, userlikedbooks };

@@ -14,7 +14,7 @@ const bookSchema = new Schema({
   totalLikes: { type: Number, default: 0 },
   status : {
     type: String,
-    enum: ["available","borrowed","reserved"],
+    enum: ["available","unavailable"],
     default: "available",
   },
   borrowerId: { type: Schema.Types.ObjectId, ref: "User" },

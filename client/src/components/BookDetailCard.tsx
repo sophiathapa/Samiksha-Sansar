@@ -129,7 +129,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       } catch (error: any) {
         alert(error?.response?.data?.message);
       }
-    } else if (bookStatus === "borrowed" && borrowedBooks.includes(bookId)) {
+    } else if (bookStatus === "unavailable" && borrowedBooks.includes(bookId)) {
       try {
         dispatch(removeBorrowedBook(bookId));
 
@@ -145,7 +145,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       } catch (error: any) {
         alert(error?.response?.data?.message);
       }
-    } else if (bookStatus === "borrowed" && !reservedBooks.includes(bookId)) {
+    } else if (bookStatus === "unavailable" && !reservedBooks.includes(bookId)) {
       try {
         dispatch(addReserveBook(bookId));
         await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/reserveBook`, {
@@ -156,14 +156,14 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       } catch (error: any) {
         alert(error?.response?.data?.message);
       }
-    } else if (bookStatus === "borrowed" && reservedBooks.includes(bookId)) {
+    } else if (bookStatus === "unavailable" && reservedBooks.includes(bookId)) {
       try {
         dispatch(removeReservedBook(bookId));
-        const { data } = await axios.patch(
+        await axios.patch(
           `${process.env.NEXT_PUBLIC_API_URL}/removeReservedBooks`,
           { bookId, userId }
         );
-        setStatus(data);
+
         alert(" cancel reserve");
       } catch (error: any) {
         alert(error?.response?.data?.message);
@@ -312,11 +312,11 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
               >
                 {borrowedBooks.includes(book._id)
                   ? "Cancel Borrow"
-                  : reservedBooks?.includes(book._id)
-                  ? "Already Reserved"
-                  : status === "available"
+                  : status === "unavailable" && !reservedBooks?.includes(book._id)
+                  ?"Reserve Book" 
+                  : status === "available" && !borrowedBooks.includes(book._id)
                   ? "Borrow Book"
-                  : "Reserve Book"}
+                  :  "Already Reserved"}
               </Button>
               <Button onClick={() => handleAddToRead(book._id, userId)}>
                 Add to Reading List
