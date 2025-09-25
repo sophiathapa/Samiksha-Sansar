@@ -92,11 +92,11 @@ const borrowBook = async (req, res) => {
   const book = await Book.findOne({ _id: bookId, borrowerId: null });
 
   if (book.reservedBy.includes(userId)) {
-    book.reservedBy = book.reservedBy.filter((user) => {
-      user.toString() !== userId;
-    });
+    book.reservedBy = book.reservedBy.filter(
+      (user) => user.toString() !== userId
+    );
   }
-
+  console.log(book.reservedBy);
   book.borrowerId = userId;
   book.status = "unavailable";
   book.save();
@@ -129,10 +129,17 @@ const reserveBook = async (req, res) => {
 
 const getBorrowedBook = async (req, res) => {
   try {
-    const { userId } = req.query;
-    const books = await Book.find({ borrowerId: userId }, { _id: 1 });
-    const borrowedBooks = books.map((book) => book._id.toString());
-    return res.json(borrowedBooks);
+    const { userId, all } = req.query;
+    if (all === "no") {
+      const books = await Book.find({ borrowerId: userId }, { _id: 1 });
+      const borrowedBooks = books.map((book) => book._id.toString());
+      return res.json(borrowedBooks);
+    }
+
+    if (all === "yes") {
+      const books = await Book.find({ borrowerId: userId });
+      return res.json(books);
+    }
   } catch (err) {
     console.error("Error fetching reserved books:", err);
     return res.status(500).json({ error: "Internal server error" });
@@ -141,16 +148,24 @@ const getBorrowedBook = async (req, res) => {
 
 const getReservedBooks = async (req, res) => {
   try {
-    const { userId } = req.query;
+    const { userId, all } = req.query;
+    if (all === "no") {
+      const reservedBooks = await Book.find(
+        { reservedBy: userId },
+        { _id: 1 }
+      ).lean();
 
-    const reservedBooks = await Book.find(
-      { reservedBy: userId },
-      { _id: 1 }
-    ).lean();
+      const reservedBooksById = reservedBooks.map((book) =>
+        book._id.toString()
+      );
 
-    const reservedBooksById = reservedBooks.map((book) => book._id.toString());
+      return res.json(reservedBooksById);
+    }
 
-    return res.json(reservedBooksById);
+    if (all === "yes") {
+      const reservedBooks = await Book.find({ reservedBy: userId }).lean();
+      return res.json(reservedBooks);
+    }
   } catch (err) {
     console.error("Error fetching reserved books:", err);
     return res.status(500).json({ error: "Internal server error" });
@@ -193,6 +208,36 @@ const removeReservedBook = async (req, res) => {
   }
 };
 
+const getUserBookStatus = async (req, res) => {
+  try {
+    const { userId, bookId } = req.query;
+    const book = await Book.findOne({ _id: bookId });
+    if (book.borrowerId?.toString() === userId) {
+      return res.json({ status: "borrowed" });
+    }
+
+    if (book.reservedBy?.includes(userId)) {
+      return res.json({ status: "reserved" });
+    }
+    if (!book.borrowerId) {
+      return res.json({ status: "available" });
+    }
+
+    return res.json({ status: "unavailable" });
+  } catch (err) {
+    console.error("Error fetching reserved books:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+const getReservedBy = async (req, res) => {
+  const { bookId } = req.query;
+  const book = await Book.findOne({ _id: bookId });
+
+  const reservedUsers = book.reservedBy?.map((user) => user.toString());
+  res.json(reservedUsers);
+};
+
 export {
   addBook,
   deleteBook,
@@ -208,4 +253,6 @@ export {
   getReservedBooks,
   removeBorrowedId,
   removeReservedBook,
+  getUserBookStatus,
+  getReservedBy,
 };

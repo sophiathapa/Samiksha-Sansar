@@ -2,7 +2,6 @@ import User from "../models/user.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { sendEmail } from "../utils/email.js";
-import Book from "../models/book.js";
 
 const getAllUsers = async (req, res) => {
   const users = await User.find();
@@ -54,15 +53,15 @@ const login = async (req, res) => {
 
 const addBookToRead = async (req, res) => {
   const { bookId, userId } = req.body;
-  const user = await User.findOne({_id: userId});
-  const book = user.readingList.includes(bookId);
+  const user = await User.findOne({ _id: userId });
+  const book = user.savedBooks.includes(bookId);
   if (!book) {
     await User.findOneAndUpdate(
       {
         _id: userId,
       },
       {
-        $push: { readingList: bookId },
+        $push: { savedBooks: bookId },
       }
     );
 
@@ -73,4 +72,21 @@ const addBookToRead = async (req, res) => {
       .json({ message: "Book already added to reading list" });
 };
 
-export { getAllUsers, register, login, addBookToRead };
+const getSavedBooks = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    const savedBooks = await User.findOne(
+      { _id: userId },
+      { savedBooks: 1 }
+    ).populate("savedBooks");
+    res.json(savedBooks);
+
+  }
+  catch (err) {
+    console.error("Error fetching reserved books:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+
+};
+
+export { getAllUsers, register, login, addBookToRead, getSavedBooks };

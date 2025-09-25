@@ -14,6 +14,8 @@ import {
   getReservedBooks,
   removeBorrowedId,
   removeReservedBook,
+  getUserBookStatus,
+  getReservedBy,
 } from "../controllers/book.js";
 import multer from "multer";
 
@@ -45,5 +47,7 @@ router.get("/getBorrowedBooks", getBorrowedBook);
 router.get("/getReservedBooks", getReservedBooks);
 router.patch("/removeBorrowedBooks",removeBorrowedId);
 router.patch("/removeReservedBooks", removeReservedBook);
+router.get("/userBookStatus", getUserBookStatus);
+router.get("/getReservedBy", getReservedBy);
 
 export default router;
