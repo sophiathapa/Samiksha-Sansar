@@ -3,6 +3,7 @@ import {
   fetchBorrowedBooks,
   fetchLikedBooks,
   fetchReservedBooks,
+  fetchSavedBooks,
 } from "./userThunks";
 
 export interface UserState {
@@ -13,6 +14,7 @@ export interface UserState {
   likedBooks: string[];
   borrowedBooks: string[];
   reservedBooks: string[];
+  savedBooks: string[];
 }
 
 const initialState: UserState = {
@@ -23,6 +25,7 @@ const initialState: UserState = {
   likedBooks: [],
   borrowedBooks: [],
   reservedBooks: [],
+  savedBooks : [],
 };
 
 export const userSlice = createSlice({
@@ -66,6 +69,17 @@ export const userSlice = createSlice({
         (id) => id !== action.payload
       );
     },
+
+     addSavedBook: (state, action) => {
+      if (!state.savedBooks.includes(action.payload)) {
+        state.savedBooks.push(action.payload);
+      }
+    },
+    removeSavedBook: (state, action) => {
+      state.savedBooks = state.savedBooks.filter(
+        (id) => id !== action.payload
+      );
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(fetchLikedBooks.fulfilled, (state, action) => {
@@ -76,6 +90,9 @@ export const userSlice = createSlice({
     });
     builder.addCase(fetchReservedBooks.fulfilled, (state, action) => {
       state.reservedBooks = action.payload;
+    });
+     builder.addCase(fetchSavedBooks.fulfilled, (state, action) => {
+      state.savedBooks = action.payload;
     });
   },
 });
@@ -89,6 +106,8 @@ export const {
   removeBorrowedBook,
   addReserveBook,
   removeReservedBook,
+  addSavedBook,
+  removeSavedBook,
 } = userSlice.actions;
 
 export default userSlice.reducer;

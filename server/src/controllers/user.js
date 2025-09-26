@@ -51,7 +51,7 @@ const login = async (req, res) => {
     .json({ message: "Login successful", token, user: user, isLoggedIn: true });
 };
 
-const addBookToRead = async (req, res) => {
+const saveBook = async (req, res) => {
   const { bookId, userId } = req.body;
   const user = await User.findOne({ _id: userId });
   const book = user.savedBooks.includes(bookId);
@@ -65,28 +65,52 @@ const addBookToRead = async (req, res) => {
       }
     );
 
-    return res.status(201).json({ message: "Book added to reading list" });
-  } else
-    return res
-      .status(200)
-      .json({ message: "Book already added to reading list" });
+    return res.status(201).json({ message: "Book saved" });
+  } else return res.status(200).json({ message: "Book already saved" });
 };
 
 const getSavedBooks = async (req, res) => {
   try {
-    const { userId } = req.query;
-    const savedBooks = await User.findOne(
-      { _id: userId },
-      { savedBooks: 1 }
-    ).populate("savedBooks");
-    res.json(savedBooks);
+    const { userId, all } = req.query;
+    if (all === "yes") {
+      const savedBooks = await User.findOne(
+        { _id: userId },
+        { savedBooks: 1 }
+      ).populate("savedBooks");
+      res.json(savedBooks);
+    }
 
-  }
-  catch (err) {
+    if (all === "no") {
+      const book = await User.findOne({ _id: userId });
+      const savedBooks = book.savedBooks;
+      res.json(savedBooks);
+    }
+  } catch (err) {
     console.error("Error fetching reserved books:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
-
 };
 
-export { getAllUsers, register, login, addBookToRead, getSavedBooks };
+const removeSavedBooks = async (req, res) => {
+  try {
+    const { userId, bookId } = req.body;
+    const user = await User.findOne({ _id: userId });
+
+    if (!user.savedBooks.includes(bookId)) {
+    return res.json({ message: "Book of that id not saved" });
+    }
+    
+    const newSavedBooks = user.savedBooks.filter(
+      (book) => book.toString() !== bookId
+    );
+    user.savedBooks = newSavedBooks;
+    user.save();
+    return res.json({ message: " Cancel Save" });
+
+  } catch (err) {
+    console.error("Error fetching reserved books:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { getAllUsers, register, login, saveBook, getSavedBooks ,removeSavedBooks};

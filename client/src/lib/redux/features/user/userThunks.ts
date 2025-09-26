@@ -29,7 +29,16 @@ const fetchReservedBooks = createAsyncThunk(
       `${process.env.NEXT_PUBLIC_API_URL}/getReservedBooks?userId=${userId}&all=no`
     );
     return data; // array of bookIds
+  })
+
+  const fetchSavedBooks = createAsyncThunk(
+  "user/fetchSavedBooks",
+  async (userId:string) => {
+    const { data } = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/getSavedBooks?userId=${userId}&all=no`
+    );
+    return data; // array of bookIds
   }
 );
 
-export { fetchLikedBooks, fetchBorrowedBooks, fetchReservedBooks };
+export { fetchLikedBooks, fetchBorrowedBooks, fetchReservedBooks ,fetchSavedBooks };

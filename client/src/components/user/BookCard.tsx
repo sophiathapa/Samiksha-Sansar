@@ -8,28 +8,70 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { addSavedBook, removeSavedBook } from "@/lib/redux/features/user/userSlice";
 
 export type Book = {
   title: string;
   author: string;
   coverImg: string;
+  _id: string;
 };
 
 interface BookCardProps {
   book: Book;
   featured?: boolean;
-  onClick?: ()=> void;
+  onClick?: () => void;
 }
 
-const BookCard = ({ book, featured,onClick }: BookCardProps) => {
+const BookCard = ({ book, featured, onClick }: BookCardProps) => {
+  const user = useSelector((state: RootState) => state.user);
+  const { id: userId ,savedBooks} = user;
+  const dispatch = useDispatch();
+
+  const handleSaveBook = async (bookId: string, userId: string) => {
+    try {
+       if(!savedBooks.includes(bookId)){
+              dispatch(addSavedBook(bookId));
+              const { data } = await axios.patch(
+                `${process.env.NEXT_PUBLIC_API_URL}/saveBook`,
+                {
+                  bookId,
+                  userId,
+                }
+              );
+              toast(data.message);
+            }
+            else{
+      
+              dispatch(removeSavedBook(bookId));
+              const { data } = await axios.patch(
+                `${process.env.NEXT_PUBLIC_API_URL}/removeSavedBook`,
+                {
+                  bookId,
+                  userId,
+                }
+              );
+              toast(data.message);
+            }
+      
+    } catch (error: any) {
+      toast(error?.response?.data?.message);
+    }
+  };
+
   return (
     <article
       className={`relative ${featured ? "w-44 md:w-56" : "w-32 md:w-36"}`}
       onClick={onClick}
     >
-      <Card className="overflow-hidden border-0 shadow-md transform transition duration-200 ease-in-out
+      <Card
+        className="overflow-hidden border-0 shadow-md transform transition duration-200 ease-in-out
         hover:scale-105
-        active:scale-110">
+        active:scale-110"
+      >
         <img
           src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
           alt={`${book.title} book cover by ${book.author}`}
@@ -52,10 +94,14 @@ const BookCard = ({ book, featured,onClick }: BookCardProps) => {
               size="icon"
               variant="secondary"
               className="rounded-full bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-              onClick={() => toast(`Saved “${book.title}” to bookmarks`)}
+              onClick={() => handleSaveBook(book._id, userId)}
               aria-label={`Bookmark ${book.title}`}
             >
-              <Bookmark className="h-4 w-4" />
+              <Bookmark className={`w-4 h-4 ${
+                      savedBooks.includes(book._id)
+                        ? " text-red-700 fill-red-700"
+                        : "text-red-700 "
+                    }`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Save</TooltipContent>

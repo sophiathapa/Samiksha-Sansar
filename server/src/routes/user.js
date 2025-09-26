@@ -1,16 +1,19 @@
 import express from "express";
 import {
-  addBookToRead,
   getAllUsers,
   getSavedBooks,
   login,
   register,
+  removeSavedBooks,
+  saveBook,
 } from "../controllers/user.js";
 
 const router = express.Router();
 
 router.get("/users", getAllUsers);
 router.post("/register", register);
-router.patch("/readingList", addBookToRead);
-router.get("/savedBooks", getSavedBooks);
+router.post("/login", login);
+router.patch("/saveBook", saveBook);
+router.get("/getSavedBooks", getSavedBooks);
+router.patch("/removeSavedBook", removeSavedBooks);
 export default router;

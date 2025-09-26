@@ -13,6 +13,7 @@ import {
   fetchBorrowedBooks,
   fetchLikedBooks,
   fetchReservedBooks,
+  fetchSavedBooks,
 } from "@/lib/redux/features/user/userThunks";
 import { setUser } from "@/lib/redux/features/user/userSlice";
 
@@ -20,7 +21,7 @@ const UserPage = () => {
   const [books, setBooks] = useState([]);
   const [genre, setGenre] = useState("All");
   const user = useSelector((state: RootState) => state.user);
-  const { id: userId, borrowedBooks } = user;
+  const { id: userId, savedBooks } = user;
   const [bookByGenre, setBookByGenre] = useState([]);
   const [selectBook, setSelectBook] = useState(null);
 
@@ -55,6 +56,7 @@ const UserPage = () => {
       dispatch(fetchLikedBooks(userId));
       dispatch(fetchBorrowedBooks(userId));
       dispatch(fetchReservedBooks(userId));
+      dispatch(fetchSavedBooks(userId));
     }
   }, [userId, dispatch]);
 

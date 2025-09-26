@@ -96,7 +96,6 @@ const borrowBook = async (req, res) => {
       (user) => user.toString() !== userId
     );
   }
-  console.log(book.reservedBy);
   book.borrowerId = userId;
   book.status = "unavailable";
   book.save();

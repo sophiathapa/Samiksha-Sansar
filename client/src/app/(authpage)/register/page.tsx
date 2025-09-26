@@ -36,7 +36,6 @@ const Singin = () => {
   const handleSubmit = async(values)=>{
     try{
       const {data} =await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/register`,values)
-      console.log(data)
     if(data.isRegisteredIn){
       router.push('/login')
     }

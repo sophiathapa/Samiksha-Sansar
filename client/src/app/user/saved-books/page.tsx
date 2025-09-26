@@ -14,7 +14,7 @@ const Saved = () => {
 
   const fetchSavedBooks = async () => {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/savedBooks?userId=${userId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/getSavedBooks?userId=${userId}&all=yes`
     );
     setSavedBooks(data.savedBooks);
   };
