@@ -26,12 +26,15 @@ import { persistor, RootState } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSelector } from "react-redux";
+import BookCard from "@/components/user/BookCard";
+import BookDetailCard from "@/components/BookDetailCard";
 
 export default function RootLayout({ children }) {
   const user = useSelector((state: RootState) => state.user);
   const { name: userName} = user;
   const [searchBooks, setSearchBooks] = useState([]);
   const [search, setSearch] = useState("");
+  const [selectBook, setSelectBook] = useState(null);
   const router = useRouter();
 
   const handleLogout = () => {
@@ -62,6 +65,11 @@ export default function RootLayout({ children }) {
                 aria-label="Search books"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={(e)=>{
+                  if (e.key === "Enter") 
+                  handleSearchSubmit()
+                  
+                }}
               />
               <CircleX
                 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
@@ -126,8 +134,35 @@ export default function RootLayout({ children }) {
             </DropdownMenu>
           </nav>
         </header>
+        {/* 1. If a book is selected → show detail only */}
+{selectBook ? (
+  <BookDetailCard
+    book={selectBook}
+    onBack={() => {
+      router.push("/user/home");
+      setSelectBook(null);
+    }}
+  />
+) : (
 
-        {children}
+  /* 2. If search results exist → show searchBooks */
+  searchBooks?.length > 0 ? (
+    <div className="flex gap-10 mt-6 ml-6">
+      {searchBooks.map((book, idx) => (
+        <BookCard
+          key={idx}
+          book={book}
+          onClick={() => setSelectBook(book)}
+        />
+      ))}
+    </div>
+  ) : (
+
+    children
+  )
+)}
+
+        
       </div>
     </>
   );
