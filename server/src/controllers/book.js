@@ -31,6 +31,16 @@ const getFeaturedBook = async (req, res) => {
   res.status(200).json(books);
 };
 
+const getPopularBook = async (req, res) => {
+  const books = await Book.find({ popular: true });
+  res.status(200).json(books);
+};
+
+const getNewBook = async (req, res) => {
+  const books = await Book.find().sort({ createdAt: -1 }).limit(5);
+  res.status(200).json(books);
+};
+
 const deleteBook = async (req, res) => {
   await Book.deleteOne({ _id: req.query.id });
   res.status(200).json("Book deleted");
@@ -254,4 +264,6 @@ export {
   removeReservedBook,
   getUserBookStatus,
   getReservedBy,
+  getNewBook,
+  getPopularBook,
 };

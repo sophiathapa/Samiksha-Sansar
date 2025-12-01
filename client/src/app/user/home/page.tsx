@@ -19,13 +19,14 @@ import { setUser } from "@/lib/redux/features/user/userSlice";
 
 const UserPage = () => {
   const [books, setBooks] = useState([]);
-  const [genre, setGenre] = useState("All");
+  const [newBooks, setNewBooks] = useState([]);
+  const [popularBooks, setPopularBooks] = useState([]);
+  const [genre, setGenre] = useState("");
   const user = useSelector((state: RootState) => state.user);
   const { id: userId, savedBooks } = user;
   const [bookByGenre, setBookByGenre] = useState([]);
   const [selectBook, setSelectBook] = useState(null);
 
-  const [searchBooks, setSearchBooks] = useState([]);
   const router = useRouter();
   const dispatch = useAppDispatch();
 
@@ -36,6 +37,21 @@ const UserPage = () => {
     setBooks(fetchedBooks.data);
   };
 
+   const fetchNewBook = async () => {
+    const fetchedNewBooks = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/newBooks`
+    );
+    setNewBooks(fetchedNewBooks.data);
+  };
+
+   const fetchPopularBook = async () => {
+    const popularBooks = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_URL}/popularBooks`
+    );
+    setPopularBooks(popularBooks.data);
+  };
+
+  
   const fetchBookByGenre = async () => {
     const { data } = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
@@ -43,8 +59,11 @@ const UserPage = () => {
     setBookByGenre(data);
   };
 
+ 
   useEffect(() => {
     fetchBook();
+    fetchNewBook();
+    fetchPopularBook();
   }, []);
 
   useEffect(() => {
@@ -64,27 +83,12 @@ const UserPage = () => {
     <>
       {/* Main content */}
       <main className="col-span-12 px-7 py-4">
-        {searchBooks && (
-          <div className=" flex gap-5 mt-5">
-            {searchBooks.map((book, id) => {
-              return (
-                <BookCard
-                  key={id}
-                  book={book}
-                  onClick={() => {
-                    setSelectBook(book);
-                  }}
-                />
-              );
-            })}
-          </div>
-        )}
 
         {!selectBook ? (
           <>
             <CategoryFilter genre={genre} setGenre={setGenre} />
 
-            {genre === "All" ? (
+            {genre === "" ? (
               <>
                 {/* Popular Bestsellers */}
                 <section
@@ -110,7 +114,7 @@ const UserPage = () => {
                     <div className="lg:col-span-8">
                       <div className="shelf">
                         <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
-                          {books.map((b, i) => (
+                          {popularBooks.map((b, i) => (
                             <BookCard
                               key={i}
                               book={b}
@@ -135,15 +139,14 @@ const UserPage = () => {
                     id="interesting-heading"
                     className="text-xl md:text-2xl font-bold tracking-tight"
                   >
-                    Can be interesting
+                    New Arrivals
                   </h2>
                   <p className="mt-2 text-muted-foreground">
-                    Check this list of books, picked up by the website and
-                    choose something new!
+                    Explore Fresh Arrivals and Find Your Next Great Read.
                   </p>
                   <div className="mt-4 shelf">
                     <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
-                      {books.map((b, i) => (
+                      {newBooks.map((b, i) => (
                         <BookCard
                           key={i}
                           book={b}
@@ -156,7 +159,20 @@ const UserPage = () => {
                   </div>
                 </section>
               </>
-            ) : (
+            ) : genre === "All" ?(
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-3 mt-10">
+                {books.map((b, i) => (
+                  <BookCard
+                    key={i}
+                    book={b}
+                    onClick={() => {
+                      setSelectBook(b);
+                    }}
+                  />
+                ))}
+              </div>
+            )
+            :(
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-3 mt-10">
                 {bookByGenre.map((b, i) => (
                   <BookCard

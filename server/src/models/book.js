@@ -20,7 +20,8 @@ const bookSchema = new Schema({
   borrowerId: { type: Schema.Types.ObjectId, ref: "User" },
   reservedBy: [{ type: Schema.Types.ObjectId, ref: "User" }],
   
-});
+},
+{ timestamps: true });
 
 const Book = mongoose.model("Book", bookSchema);
 export default Book;

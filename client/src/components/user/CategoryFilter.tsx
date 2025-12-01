@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 const defaultCategories = [
   "All",
   "Fiction",
+  "Non-fiction",
   "Drama",
   "Thriller",
+  "Romance",
   "Educational",
   "Psychology",
   "Business",
@@ -24,7 +26,7 @@ const CategoryFilter = ({
   genre,
   setGenre,
 }: CategoryFilterProps) => {
-  const [active, setActive] = useState<string>(categories[0]);
+  const [active, setActive] = useState<string>("");
 
   return (
     <div className="flex items-center gap-2 flex-wrap">

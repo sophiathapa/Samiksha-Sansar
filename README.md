@@ -18,6 +18,35 @@ Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover
 
 - 💡 **Admin Features**: Add, update, or delete books.
 
+## Tech Stack (MERN)
+ **Frontend**
+
+  - React.js
+
+  - HTML5, CSS3
+
+  - JavaScript (ES6+)
+
+  - Tailwind CSS 
+
+  - Redux / Context API (state management)
+
+**Backend**
+
+  - Node.js
+
+  - Express.js
+
+  - RESTful API architecture
+
+  - JWT Authentication / OAuth 
+
+**Database**
+
+  - MongoDB
+
+  - Mongoose ODM
+
 ## ✅ Development Phases
 
 ### 📍 Phase 1 – MVP (Core System)
