@@ -31,7 +31,7 @@ import BookDetailCard from "@/components/BookDetailCard";
 
 export default function RootLayout({ children }) {
   const user = useSelector((state: RootState) => state.user);
-  const { name: userName} = user;
+  const { name: userName } = user;
   const [searchBooks, setSearchBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [selectBook, setSelectBook] = useState(null);
@@ -65,10 +65,8 @@ export default function RootLayout({ children }) {
                 aria-label="Search books"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e)=>{
-                  if (e.key === "Enter") 
-                  handleSearchSubmit()
-                  
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearchSubmit();
                 }}
               />
               <CircleX
@@ -99,19 +97,25 @@ export default function RootLayout({ children }) {
                     Profile
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                    onClick={()=>router.push("/user/borrowed")}>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                    onClick={() => router.push("/user/borrowed")}
+                  >
                     <BookOpenCheck className="w-4 h-4 text-gray-600" />
                     Borrowed Books
                   </DropdownMenuItem>
 
-                  <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                  onClick={()=>router.push("/user/reserved")}>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                    onClick={() => router.push("/user/reserved")}
+                  >
                     <BookOpen className="w-4 h-4 text-gray-600" />
                     Reserved Books
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                  onClick={()=>router.push("/user/saved-books")}>
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                    onClick={() => router.push("/user/saved-books")}
+                  >
                     <Bookmark className="w-4 h-4 text-gray-600" />
                     Saved Books
                   </DropdownMenuItem>
@@ -135,34 +139,28 @@ export default function RootLayout({ children }) {
           </nav>
         </header>
         {/* 1. If a book is selected → show detail only */}
-{selectBook ? (
-  <BookDetailCard
-    book={selectBook}
-    onBack={() => {
-      router.push("/user/home");
-      setSelectBook(null);
-    }}
-  />
-) : (
-
-  /* 2. If search results exist → show searchBooks */
-  searchBooks?.length > 0 ? (
-    <div className="flex gap-10 mt-6 ml-6">
-      {searchBooks.map((book, idx) => (
-        <BookCard
-          key={idx}
-          book={book}
-          onClick={() => setSelectBook(book)}
-        />
-      ))}
-    </div>
-  ) : (
-
-    children
-  )
-)}
-
-        
+        {selectBook ? (
+          <BookDetailCard
+            book={selectBook}
+            onBack={() => {
+              router.push("/user/home");
+              setSelectBook(null);
+            }}
+          />
+        ) : /* 2. If search results exist → show searchBooks */
+        searchBooks?.length > 0 ? (
+          <div className="flex gap-10 mt-6 ml-6">
+            {searchBooks.map((book, idx) => (
+              <BookCard
+                key={idx}
+                book={book}
+                onClick={() => setSelectBook(book)}
+              />
+            ))}
+          </div>
+        ) : (
+          children
+        )}
       </div>
     </>
   );

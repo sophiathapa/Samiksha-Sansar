@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import BookDetailCard from "@/components/BookDetailCard";
-
 import { persistor, RootState, useAppDispatch } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
 import {
@@ -15,7 +14,7 @@ import {
   fetchReservedBooks,
   fetchSavedBooks,
 } from "@/lib/redux/features/user/userThunks";
-import { setUser } from "@/lib/redux/features/user/userSlice";
+import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 
 const UserPage = () => {
   const [books, setBooks] = useState([]);
@@ -24,51 +23,39 @@ const UserPage = () => {
   const [genre, setGenre] = useState("");
   const user = useSelector((state: RootState) => state.user);
   const { id: userId, savedBooks } = user;
-  const [bookByGenre, setBookByGenre] = useState([]);
   const [selectBook, setSelectBook] = useState(null);
+  const [total, setTotal] = useState("");
 
   const router = useRouter();
   const dispatch = useAppDispatch();
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/books`
+      `${process.env.NEXT_PUBLIC_API_URL}/books?page=1&limit=15`
     );
-    setBooks(fetchedBooks.data);
+    setBooks(fetchedBooks.data.books);
+    setTotal(fetchedBooks.data.totalBooks);
   };
 
-   const fetchNewBook = async () => {
+  const fetchNewBook = async () => {
     const fetchedNewBooks = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/newBooks`
     );
     setNewBooks(fetchedNewBooks.data);
   };
 
-   const fetchPopularBook = async () => {
+  const fetchPopularBook = async () => {
     const popularBooks = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/popularBooks`
     );
-    setPopularBooks(popularBooks.data);
+    setPopularBooks(popularBooks.data.books);
   };
 
-  
-  const fetchBookByGenre = async () => {
-    const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
-    );
-    setBookByGenre(data);
-  };
-
- 
   useEffect(() => {
     fetchBook();
     fetchNewBook();
     fetchPopularBook();
   }, []);
-
-  useEffect(() => {
-    fetchBookByGenre();
-  }, [genre]);
 
   useEffect(() => {
     if (userId) {
@@ -83,7 +70,6 @@ const UserPage = () => {
     <>
       {/* Main content */}
       <main className="col-span-12 px-7 py-4">
-
         {!selectBook ? (
           <>
             <CategoryFilter genre={genre} setGenre={setGenre} />
@@ -108,7 +94,12 @@ const UserPage = () => {
                         your taste. Check it.
                       </p>
                       <div className="mt-4">
-                        <Button variant="hero">View full list</Button>
+                        <Button
+                          variant="hero"
+                          onClick={() => router.push("books/popular")}
+                        >
+                          View full list
+                        </Button>
                       </div>
                     </div>
                     <div className="lg:col-span-8">
@@ -159,31 +150,10 @@ const UserPage = () => {
                   </div>
                 </section>
               </>
-            ) : genre === "All" ?(
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-3 mt-10">
-                {books.map((b, i) => (
-                  <BookCard
-                    key={i}
-                    book={b}
-                    onClick={() => {
-                      setSelectBook(b);
-                    }}
-                  />
-                ))}
-              </div>
-            )
-            :(
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-4 md:gap-3 mt-10">
-                {bookByGenre.map((b, i) => (
-                  <BookCard
-                    key={i}
-                    book={b}
-                    onClick={() => {
-                      setSelectBook(b);
-                    }}
-                  />
-                ))}
-              </div>
+            ) : genre === "All" ? (
+              <BooksGridWithPagination query="books?" />
+            ) : (
+              <BooksGridWithPagination query={`books/genre?genre=${genre}&`} />
             )}
           </>
         ) : (
