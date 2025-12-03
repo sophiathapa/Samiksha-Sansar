@@ -21,7 +21,7 @@ const Home = () => {
     const fetchedBooks = await axios.get(
       `${process.env.NEXT_PUBLIC_API_URL}/books`
     );
-    setBooks(fetchedBooks.data);
+    setBooks(fetchedBooks.data.books);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {

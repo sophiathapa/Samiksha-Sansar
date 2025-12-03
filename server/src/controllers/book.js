@@ -22,8 +22,21 @@ const addBook = async (req, res) => {
 };
 
 const getAllBook = async (req, res) => {
-  const books = await Book.find();
-  res.status(200).json(books);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+
+  const skip = (page - 1) * limit;
+
+  const books = await Book.find().skip(skip).limit(limit);
+
+  const total = await Book.countDocuments();
+
+  res.json({
+    books,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  });
 };
 
 const getFeaturedBook = async (req, res) => {
@@ -32,12 +45,43 @@ const getFeaturedBook = async (req, res) => {
 };
 
 const getPopularBook = async (req, res) => {
-  const books = await Book.find({ popular: true });
-  res.status(200).json(books);
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+
+  const skip = (page - 1) * limit;
+
+  const books = await Book.find({ popular: true }).skip(skip).limit(limit);
+
+  const total = await Book.countDocuments({ popular: true });
+
+  res.json({
+    books,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  });
 };
 
+const getBookByGenre = async (req, res) => {
+  const { genre } = req.query;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 15;
+
+  const skip = (page - 1) * limit;
+
+  const books = await Book.find({ genre: genre }).skip(skip).limit(limit);
+
+  const total = await Book.countDocuments({ genre: genre });
+
+  res.json({
+    books,
+    total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page,
+  });
+};
 const getNewBook = async (req, res) => {
-  const books = await Book.find().sort({ createdAt: -1 }).limit(5);
+  const books = await Book.find().sort({ createdAt: -1 }).limit(8);
   res.status(200).json(books);
 };
 
@@ -59,16 +103,6 @@ const searchBook = async (req, res) => {
     return res.status(401).json({ message: "Not found" });
   }
   return res.status(200).json(searchedBooks);
-};
-
-const getBookByGenre = async (req, res) => {
-  const { genre } = req.query;
-
-  const book = await Book.find({
-    genre: genre,
-  });
-
-  res.json(book);
 };
 
 const editBook = async (req, res) => {
