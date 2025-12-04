@@ -39,6 +39,12 @@ const getAllBook = async (req, res) => {
   });
 };
 
+const fetchBookWithoutPagination = async (req, res) => {
+  const books = await Book.find();
+
+  res.json(books);
+};
+
 const getFeaturedBook = async (req, res) => {
   const books = await Book.find({ featured: true });
   res.status(200).json(books);
@@ -285,6 +291,7 @@ export {
   addBook,
   deleteBook,
   getAllBook,
+  fetchBookWithoutPagination,
   searchBook,
   getBookByGenre,
   editBook,

@@ -11,12 +11,11 @@ import axios from "axios";
 
 interface BooksGridWithPaginationProps {
   query: string;
+  onBookSelect :()=> void;
 }
 
-const BooksGridWithPagination = ({ query }: BooksGridWithPaginationProps) => {
-  const [selectBook, setSelectBook] = useState(null);
+const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPaginationProps) => {
   const [page, setPage] = useState<number>(1);
-
   const [books, setBooks] = useState([]);
   const [totalPages, setTotalPages] = useState<number>();
   const [currentPage, setCurrentPage] = useState<number>();
@@ -42,7 +41,7 @@ const BooksGridWithPagination = ({ query }: BooksGridWithPaginationProps) => {
             key={i}
             book={b}
             onClick={() => {
-              setSelectBook(b);
+             onBookSelect(b);
             }}
           />
         ))}

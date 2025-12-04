@@ -4,24 +4,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import BookCard from "@/components/user/BookCard";
+import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import CategoryFilter from "@/components/user/CategoryFilter";
 import axios from "axios";
 import { CircleX, Search } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const Home = () => {
-  const [books, setBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [searchBooks, setSearchBooks] = useState([]);
   const [genre, setGenre] = useState("All");
-  const [bookByGenre, setBookByGenre] = useState([]);
+
   const [selectBook, setSelectBook] = useState(null);
 
-  const fetchBook = async () => {
-    const fetchedBooks = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/books`
-    );
-    setBooks(fetchedBooks.data.books);
+  const handleSelectBook = (book) => {
+    setSelectBook(book);
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,21 +31,6 @@ const Home = () => {
     );
     setSearchBooks(data);
   };
-
-  const fetchBookByGenre = async () => {
-    const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/books/genre?genre=${genre}`
-    );
-    setBookByGenre(data);
-  };
-
-  useEffect(() => {
-    fetchBook();
-  }, []);
-
-  useEffect(() => {
-    fetchBookByGenre();
-  }, [genre]);
 
   const handleBack = () => {
     setSelectBook(null);
@@ -108,31 +90,15 @@ const Home = () => {
                 </div>
 
                 {genre === "All" ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    {books.map((b, i) => (
-                      <BookCard
-                        key={i}
-                        book={b}
-                        featured
-                        onClick={() => {
-                          setSelectBook(b);
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <BooksGridWithPagination
+                    query="books?"
+                    onBookSelect={handleSelectBook}
+                  />
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                    {bookByGenre.map((b, i) => (
-                      <BookCard
-                        key={i}
-                        book={b}
-                        featured
-                        onClick={() => {
-                          setSelectBook(b);
-                        }}
-                      />
-                    ))}
-                  </div>
+                  <BooksGridWithPagination
+                    query={`books/genre?genre=${genre}&`}
+                    onBookSelect={handleSelectBook}
+                  />
                 )}
               </>
             ) : (

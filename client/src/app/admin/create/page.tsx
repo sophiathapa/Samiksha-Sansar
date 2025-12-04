@@ -388,15 +388,7 @@ export default function AddBookForm() {
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="totalCounts"
-                        className="text-sm font-semibold text-foreground"
-                      >
-                        Total Copies
-                      </Label>
-                     
-                    </div>
+                    
 
                     <div className="relative space-y-2">
                       <Label

@@ -109,9 +109,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
     formData.append("averageRating", bookData.averageRating.toString());
     formData.append("coverImg", bookData.coverImg);
     formData.append("language", bookData.language);
-    formData.append("totalCounts", bookData.totalCounts.toString());
 
-    
     axios
       .put(
         `${process.env.NEXT_PUBLIC_API_URL}/book/edit?id=${bookData._id}`,
@@ -119,6 +117,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
       )
       .then(() => {
         alert("Book updated successfully!");
+        
       })
       .catch((error) => {
         alert(error.message);
@@ -129,7 +128,11 @@ const EditCard = ({ book, onback }: editCardProps) => {
     "Fiction",
     "Non-Fiction",
     "Mystery",
+    "Action",
+    "Comedy",
     "Romance",
+    "Novel",
+    "Poem",
     "Science Fiction",
     "Fantasy",
     "Biography",
@@ -378,26 +381,6 @@ const EditCard = ({ book, onback }: editCardProps) => {
                       handleInputChange("publishedDate", e.target.value)
                     }
                     className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="totalCounts"
-                    className="text-sm font-semibold text-foreground"
-                  >
-                    Total Copies
-                  </Label>
-                  <Input
-                    id="totalCounts"
-                    type="number"
-                    placeholder="Number of copies"
-                    value={bookData.totalCounts || ""}
-                    onChange={(e) =>
-                      handleInputChange("totalCounts", e.target.value)
-                    }
-                    className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50"
-                    min="0"
                   />
                 </div>
 

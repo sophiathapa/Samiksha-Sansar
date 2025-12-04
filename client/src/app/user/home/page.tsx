@@ -24,17 +24,19 @@ const UserPage = () => {
   const user = useSelector((state: RootState) => state.user);
   const { id: userId, savedBooks } = user;
   const [selectBook, setSelectBook] = useState(null);
-  const [total, setTotal] = useState("");
 
   const router = useRouter();
   const dispatch = useAppDispatch();
 
+  const handleSelectBook = (book) =>{
+    setSelectBook(book);
+  }
+
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/books?page=1&limit=15`
+      `${process.env.NEXT_PUBLIC_API_URL}/allBooks`
     );
-    setBooks(fetchedBooks.data.books);
-    setTotal(fetchedBooks.data.totalBooks);
+    setBooks(fetchedBooks.data);
   };
 
   const fetchNewBook = async () => {
@@ -151,9 +153,9 @@ const UserPage = () => {
                 </section>
               </>
             ) : genre === "All" ? (
-              <BooksGridWithPagination query="books?" />
+              <BooksGridWithPagination query="books?" onBookSelect={handleSelectBook}  />
             ) : (
-              <BooksGridWithPagination query={`books/genre?genre=${genre}&`} />
+              <BooksGridWithPagination query={`books/genre?genre=${genre}&`} onBookSelect={handleSelectBook} />
             )}
           </>
         ) : (
