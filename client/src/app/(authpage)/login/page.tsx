@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Lock, Mail } from "lucide-react";
+import { Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import axios from "axios";
@@ -18,6 +18,7 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/lib/redux/features/user/userSlice";
+import { AlertMessage } from "@/components/Alert/AlertMessage";
 
 const Login = () => {
   const router = useRouter();
@@ -25,6 +26,7 @@ const Login = () => {
     success: boolean;
     message: string;
   } | null>(null);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
@@ -34,9 +36,10 @@ const Login = () => {
     password: Yup.string().required("Password is required"),
   });
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values: any) => {
     try {
-      const { data } = await axios.post("http://localhost:8080/login", values);
+      setLoading(true);
+      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/login`, values);
       const { _id, firstName, email } = data.user;
       const  {token } = data
       if (data.isLoggedIn) {
@@ -46,7 +49,12 @@ const Login = () => {
         );
       }
     } catch (error: any) {
-      alert(error?.response?.data?.message);
+      setLoginStatus({
+        success: false,
+        message: error?.response?.data?.message || "Login failed",
+      }); 
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,6 +68,14 @@ const Login = () => {
       handleSubmit(values);
     },
   });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="animate-spin h-8 w-8 text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>

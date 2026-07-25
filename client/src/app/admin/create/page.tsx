@@ -12,6 +12,7 @@ import { Star, Upload, X, ChevronDown, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import axios from "axios";
+import { AlertMessage } from "@/components/Alert/AlertMessage";
 
 interface BookFormData {
   title: string;
@@ -42,6 +43,7 @@ export default function AddBookForm() {
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [status, setStatus] = useState<{success:boolean, message:string} | null>({success:true, message:"Book added successfully"});
 
   const handleInputChange = (
     field: keyof BookFormData,
@@ -98,7 +100,7 @@ export default function AddBookForm() {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setImagePreview(result);
-        setBookData((prev) => ({ ...prev, coverImg: file }));
+        setBookData((prev:any) => ({ ...prev, coverImg: file }));
       };
       reader.readAsDataURL(file);
     }
@@ -121,7 +123,7 @@ export default function AddBookForm() {
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/book`, formData)
       .then(() => {
-        alert("Book added successfully!");
+        setStatus({success:true, message:"Book added successfully"})
         setBookData({
           title: "",
           author: "",
@@ -136,9 +138,13 @@ export default function AddBookForm() {
         setImagePreview(null);
       })
       .catch((error) => {
-        alert(error.message);
+        setStatus({success:false, message:`${error?.response?.data?.message}`})
       });
   };
+
+  const closeAlert = () => {
+    setStatus(null);
+  }
 
   const genreOptions = [
     "Fiction",
@@ -176,6 +182,16 @@ export default function AddBookForm() {
         : [...prev.genre, genre],
     }));
   };
+
+  // if (status) {
+  //   return (
+  //     <div className="flex justify-center items-center">
+  //       {
+  //         AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
+  //       }
+  //     </div>
+  //   )
+  // }
 
   return (
     <>
@@ -545,6 +561,9 @@ export default function AddBookForm() {
             </CardContent>
           </Card>
         </div>
+           {status && (
+            AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
+      )}
       </div>
     </>
   );

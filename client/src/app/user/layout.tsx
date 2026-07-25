@@ -29,7 +29,7 @@ import { useSelector } from "react-redux";
 import BookCard from "@/components/user/BookCard";
 import BookDetailCard from "@/components/BookDetailCard";
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const user = useSelector((state: RootState) => state.user);
   const { name: userName } = user;
   const [searchBooks, setSearchBooks] = useState([]);
@@ -51,13 +51,12 @@ export default function RootLayout({ children }) {
   return (
     <>
       <div className="min-h-screen bg-app-gradient">
-        <header className=" top-0 w-full border-b bg-background/80  shadow-sm">
-          <nav className="flex  gap-5 h-19 items-center ">
+          <nav className="top-0 w-full border-b bg-background/80 shadow-sm flex gap-5 h-19 items-center justify-between px-4 py-6">
             <a href="/user/home" className="flex items-center">
               <img className="w-30 h-30" src="/logo.png" alt="Book Club Logo" />
             </a>
 
-            <div className="relative ml-160 ">
+            <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search book or author..."
@@ -75,69 +74,70 @@ export default function RootLayout({ children }) {
               />
               {/* <Button   className="absolute left-40 top-1/2 -translate-y-1/2  w-10 h-5" onClick={handleSearchSubmit}>Search</Button> */}
             </div>
-            <Bell className="text-muted-foreground" />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="w-8 h-8">
-                  <AvatarFallback>{userName[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
+            <div className="flex items-center gap-10">
+              <Bell className="text-muted-foreground" />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="w-10 h-10">
+                    <AvatarFallback>{userName[0]?.toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
 
-              <DropdownMenuContent
-                className="w-56 bg-secondary mt-1 mr-15 shadow-lg border border-gray-200 rounded-lg z-50"
-                align="start"
-              >
-                <DropdownMenuLabel className="text-sm font-semibold text-gray-500">
-                  My Account
-                </DropdownMenuLabel>
-
-                <DropdownMenuGroup>
-                  <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
-                    <User className="w-4 h-4 text-gray-600" />
-                    Profile
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                    onClick={() => router.push("/user/borrowed")}
-                  >
-                    <BookOpenCheck className="w-4 h-4 text-gray-600" />
-                    Borrowed Books
-                  </DropdownMenuItem>
-
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                    onClick={() => router.push("/user/reserved")}
-                  >
-                    <BookOpen className="w-4 h-4 text-gray-600" />
-                    Reserved Books
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                    onClick={() => router.push("/user/saved-books")}
-                  >
-                    <Bookmark className="w-4 h-4 text-gray-600" />
-                    Saved Books
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
-                    <Settings className="w-4 h-4 text-gray-600" />
-                    Settings
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-
-                <DropdownMenuSeparator className="my-1 border-gray-200" />
-
-                <DropdownMenuItem
-                  className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                  onClick={handleLogout}
+                <DropdownMenuContent
+                  className="w-56 bg-secondary mt-1 mr-15 shadow-lg border border-gray-200 rounded-lg z-50"
+                  align="start"
                 >
-                  <LogOut className="w-4 h-4 text-gray-600" />
-                  Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  <DropdownMenuLabel className="text-sm font-semibold text-gray-500">
+                    My Account
+                  </DropdownMenuLabel>
+
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+                      <User className="w-4 h-4 text-gray-600" />
+                      Profile
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                      onClick={() => router.push("/user/borrowed")}
+                    >
+                      <BookOpenCheck className="w-4 h-4 text-gray-600" />
+                      Borrowed Books
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                      onClick={() => router.push("/user/reserved")}
+                    >
+                      <BookOpen className="w-4 h-4 text-gray-600" />
+                      Reserved Books
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                      onClick={() => router.push("/user/saved-books")}
+                    >
+                      <Bookmark className="w-4 h-4 text-gray-600" />
+                      Saved Books
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+                      <Settings className="w-4 h-4 text-gray-600" />
+                      Settings
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuSeparator className="my-1 border-gray-200" />
+
+                  <DropdownMenuItem
+                    className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="w-4 h-4 text-gray-600" />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </nav>
-        </header>
         {/* 1. If a book is selected → show detail only */}
         {selectBook ? (
           <BookDetailCard

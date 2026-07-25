@@ -11,7 +11,6 @@ const Header1 = () => {
             alt="Book Club Logo"
           />
         <a href="/" className="flex items-center gap-2  font-serif" aria-label="Book Club home">
-          <span className="font-serif text-xl font-semibold text-foreground">Book Club</span>
         </a>
       </nav>
     </header>

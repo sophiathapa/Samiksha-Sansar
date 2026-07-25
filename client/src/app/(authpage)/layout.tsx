@@ -3,7 +3,7 @@ import styles from "../style.module.css";
 import { Toaster } from "sonner";
 import Header1 from "@/components/header1";
 
-const Layout = ({ children }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex flex-col w-full">
       <Header1 />

@@ -3,15 +3,13 @@ import { Button } from "@/components/ui/button";
 
 const Header = () => {
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <nav className="container flex h-16 items-center  ">
+      <nav className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex h-16 items-center justify-between py-6 px-4">
+        <a href="/" className="flex items-center gap-2  font-serif" aria-label="Book Club home">
           <img 
             className="w-25 h-25  " 
             src='logo.png'
             alt="Book Club Logo"
           />
-        <a href="/" className="flex items-center gap-2  font-serif" aria-label="Book Club home">
-          <span className="font-serif text-xl font-semibold text-foreground">Book Club</span>
         </a>
         <div className="hidden md:flex items-center gap-10 text-sm mx-80">
           <a href="#about" className="text-foreground hover:text-foreground transition-colors">About</a>
@@ -25,7 +23,6 @@ const Header = () => {
           </Link>
         </div>
       </nav>
-    </header>
   );
 };
 

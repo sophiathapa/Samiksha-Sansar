@@ -156,7 +156,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
     }
   };
 
-  const handleBookAction = async (e, bookId: string, userId: string) => {
+  const handleBookAction = async (e: React.MouseEvent<HTMLButtonElement>, bookId: string, userId: string) => {
     switch (e.currentTarget.textContent) {
       case "Borrow Now":
         try {
