@@ -26,7 +26,7 @@ const CategoryFilter = ({
   genre,
   setGenre,
 }: CategoryFilterProps) => {
-  const [active, setActive] = useState<string>("");
+  const [active, setActive] = useState<string>(genre);
 
   return (
     <div className="flex items-center gap-2 flex-wrap">

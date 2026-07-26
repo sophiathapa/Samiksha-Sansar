@@ -24,7 +24,7 @@ const register = async (req, res) => {
     html: `<h1>Hello ${req.body.firstName}</h1><p>Welcome to Book Club 🎉</p>`,
   });
 
-  return res.json({
+  return res.status(201).json({
     message: "User registered successfully",
     user: req.body,
     isRegisteredIn: true,

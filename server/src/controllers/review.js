@@ -12,6 +12,7 @@ const addReview = async (req, res) => {
 
     if (!user) return res.status(401).json({ message: "User not valid" });
     if (!book) return res.status(401).json({ message: "Book not valid" });
+    if (!comment) return res.status(400).json({ message: "Enter Review" });
 
     // find all reviews by this user for this book
     const reviews = await Review.find({ userId, bookId }).sort({

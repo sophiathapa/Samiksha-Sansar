@@ -1,59 +1,17 @@
-import {
-  ArrowLeft,
-  Bookmark,
-  Building,
-  Calendar,
-  Globe,
-  Heart,
-  Share2,
-  Star,
-  User,
-} from "lucide-react";
+import { ArrowLeft, Bookmark, Building, Calendar, Globe, Star, Heart, User } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "./ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
-import {
-  addBorrowedBook,
-  addLikedBook,
-  addReserveBook,
-  addSavedBook,
-  removeBorrowedBook,
-  removeLikedBook,
-  removeReservedBook,
-  removeSavedBook,
-} from "@/lib/redux/features/user/userSlice";
+import { addBorrowedBook, addLikedBook, addReserveBook, addSavedBook, removeBorrowedBook, removeLikedBook, removeReservedBook, removeSavedBook } from "@/lib/redux/features/user/userSlice";
 import { Textarea } from "./ui/textarea";
 import { Comment } from "./Comments";
 import { RootState } from "@/lib/redux/store";
 import { toast } from "sonner";
-
-export type Book = {
-  title: string;
-  author: string;
-  publishedDate: string;
-  publisher: string;
-  description: string;
-  genre: string[];
-  averageRating: number;
-  language: string;
-  coverImg: string;
-  totalLikes: number;
-  _id: string;
-  status: string;
-  borrowerId: {};
-  reservedBy: string[];
-};
+import { Book } from "@/types/book";
 
 interface BookProps {
   book: Book;
@@ -63,16 +21,10 @@ interface BookProps {
 const BookDetailCard = ({ book, onBack }: BookProps) => {
   const user = useSelector((state: RootState) => state.user);
   const [comment, setComment] = useState("");
-  const {
-    likedBooks,
-    borrowedBooks,
-    id: userId,
-    reservedBooks,
-    savedBooks,
-  } = user;
+  const { likedBooks, borrowedBooks, id: userId, reservedBooks, savedBooks } = user;
   const [reviews, setReviews] = useState([]);
-  const [totalLikes, setTotalLikes] = useState(book.totalLikes || 0);
-  const [status, setStatus] = useState(book.status || "");
+  const [totalLikes, setTotalLikes] = useState(book?.totalLikes || 0);
+  const [status, setStatus] = useState(book?.status || "");
   const dispatch = useDispatch();
   const [reservedBy, setReservedBy] = useState([]);
 
@@ -80,68 +32,53 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
-        const { data } = await axios.patch(
-          `${process.env.NEXT_PUBLIC_API_URL}/like`,
-          {
-            bookId: bookId,
-            userId: userId,
-          }
-        );
+        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
+          bookId: bookId,
+          userId: userId,
+        });
 
         setTotalLikes(data.totalLikes);
       } else {
         dispatch(removeLikedBook(bookId));
-        const { data } = await axios.patch(
-          `${process.env.NEXT_PUBLIC_API_URL}/unlike`,
-          {
-            bookId: bookId,
-            userId: userId,
-          }
-        );
+        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
+          bookId: bookId,
+          userId: userId,
+        });
         setTotalLikes(data.totalLikes);
       }
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message,{ position: "top-right" });
     }
   };
 
-
-
   const handleAddToRead = async (bookId: string, userId: string) => {
     try {
-
-      if(!savedBooks.includes(bookId)){
+      if (!savedBooks.includes(bookId)) {
         dispatch(addSavedBook(bookId));
-        const { data } = await axios.patch(
-          `${process.env.NEXT_PUBLIC_API_URL}/saveBook`,
-          {
-            bookId,
-            userId,
-          }
-        );
-        toast(data.message);
-      }
-      else{
-
+        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/saveBook`, {
+          bookId,
+          userId,
+        });
+        toast.success(data.message,{ position: "top-right" });
+      } else {
         dispatch(removeSavedBook(bookId));
-        const { data } = await axios.patch(
-          `${process.env.NEXT_PUBLIC_API_URL}/removeSavedBook`,
-          {
-            bookId,
-            userId,
-          }
-        );
-        toast(data.message);
+        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeSavedBook`, {
+          bookId,
+          userId,
+        });
+        toast.success(data.message, { position: "top-right" });
       }
-
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message, { position: "top-right" });
     }
   };
 
   const handleReview = async () => {
-    const bookId = book._id;
-
+    const bookId = book?._id;
+    if(!comment) {
+      toast.warning("Enter Review",{ position: "top-right" });
+      return ;
+    }
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/review`, {
         userId,
@@ -149,10 +86,11 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
         comment,
       });
 
-      toast("Review added");
+      toast.success("Review added",{ position: "top-right" });
       setComment("");
+      getComments();
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message,{ position: "top-right" });
     }
   };
 
@@ -164,14 +102,11 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
 
           dispatch(removeReservedBook(bookId));
 
-          const { data } = await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/borrowBook`,
-            { bookId, userId }
-          );
+          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`, { bookId, userId });
           setStatus(data);
-          toast("Book Borrowed");
+          toast.success("Book Borrowed",{ position: "top-right" });
         } catch (error: any) {
-          toast(error?.response?.data?.message);
+          toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }
 
         break;
@@ -179,14 +114,11 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       case "Borrow Book":
         try {
           dispatch(addBorrowedBook(bookId));
-          const { data } = await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/borrowBook`,
-            { bookId, userId }
-          );
+          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`, { bookId, userId });
           setStatus(data);
-          toast("Book Borrowed");
+          toast.success("Book Borrowed",{ position: "top-right" });
         } catch (error: any) {
-          toast(error?.response?.data?.message);
+          toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }
 
         break;
@@ -198,7 +130,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
             bookId,
             userId,
           });
-          toast("Book Reserved", {
+          toast.success("Book Reserved", {
             position: "top-right",
             action: {
               label: "Undo",
@@ -206,7 +138,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
             },
           });
         } catch (error: any) {
-          toast(error?.response?.data?.message);
+          toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }
 
         break;
@@ -215,17 +147,14 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
         try {
           dispatch(removeBorrowedBook(bookId));
 
-          const { data } = await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/removeBorrowedBooks`,
-            {
-              bookId: bookId,
-              userId: userId,
-            }
-          );
+          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeBorrowedBooks`, {
+            bookId: bookId,
+            userId: userId,
+          });
           setStatus(data);
-          toast("cancel borrow");
+          toast.success("cancel borrow",{ position: "top-right" });
         } catch (error: any) {
-          toast(error?.response?.data?.message);
+          toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }
 
         break;
@@ -233,14 +162,11 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       case "Cancel Reserve":
         try {
           dispatch(removeReservedBook(bookId));
-          await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/removeReservedBooks`,
-            { bookId, userId }
-          );
+          await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeReservedBooks`, { bookId, userId });
 
-          toast(" cancel reserve");
+          toast.success(" cancel reserve",{ position: "top-right" });
         } catch (error: any) {
-          toast(error?.response?.data?.message);
+          toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }
 
         break;
@@ -249,80 +175,58 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
     getBookStatus(bookId, userId);
   };
 
-  const getButtonText = (
-    bookId: string,
-    userId: string,
-    borrowedBooks: string[],
-    reservedBooks: string[]
-  ) => {
+  const getButtonText = (bookId: string, userId: string, borrowedBooks: string[], reservedBooks: string[]) => {
     const isBorrowed = borrowedBooks.includes(bookId);
     const isReserved = reservedBooks.includes(bookId);
-    const status = book.status; // or computed user-specific status
+    const status = book?.status; // or computed user-specific status
 
     if (isBorrowed) return "Return Book";
 
-    if (
-      status === "available" &&
-      !isBorrowed &&
-      !isReserved &&
-      reservedBy.length === 0
-    )
-      return "Borrow Book";
+    if (status === "available" && !isBorrowed && !isReserved && reservedBy.length === 0) return "Borrow Book";
 
-    if ((status === "unavailable" || status === "available") && !isReserved)
-      return "Reserve Book";
+    if ((status === "unavailable" || status === "available") && !isReserved) return "Reserve Book";
 
-    if (status === "available" && isReserved && reservedBy[0] === userId)
-      return "Borrow Now";
+    if (status === "available" && isReserved && reservedBy[0] === userId) return "Borrow Now";
 
-    if ((status === "unavailable" || status === "available") && isReserved)
-      return "Cancel Reserve";
+    if ((status === "unavailable" || status === "available") && isReserved) return "Cancel Reserve";
 
     return "Unavailable"; // fallback
   };
 
-
-
   const getComments = async () => {
     try {
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book._id}`
-      );
+      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book?._id}`);
       setReviews(data);
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message,{ position: "top-right" });
     }
   };
 
   const getBookStatus = async (bookId: string, userId: string) => {
     try {
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/userBookStatus?bookId=${bookId}&userId=${userId}`
-      );
+      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/userBookStatus?bookId=${bookId}&userId=${userId}`);
       setStatus(data.status);
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message,{ position: "top-right" });
     }
   };
 
   const getReservedBy = async (bookId: string) => {
     try {
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/getReservedBy?bookId=${bookId}`
-      );
+      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/getReservedBy?bookId=${bookId}`);
       setReservedBy(data);
     } catch (error: any) {
-      toast(error?.response?.data?.message);
+      toast.warning(error?.response?.data?.message,{ position: "top-right" });
     }
   };
 
   useEffect(() => {
     getComments();
-  }, [comment]);
+  }, []);
 
   useEffect(() => {
-    getBookStatus(book._id, userId);
-    getReservedBy(book._id);
+    getBookStatus(book?._id, userId);
+    getReservedBy(book?._id);
   }, []);
 
   return (
@@ -339,16 +243,12 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
         <div className=" grid grid-cols-3 gap-5">
           <Card>
             <CardContent className="flex flex-col gap-4 justify-center items-center">
-              <img
-                className="w-80 h-80 rounded-md shadow-md"
-                src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
-                alt={book.title}
-              />
+              <img className="w-80 h-80 rounded-md shadow-md" src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book?.coverImg}`} alt={book?.title} />
 
               <Badge className="bg-green-200 text-black">{status}</Badge>
               <div className="flex gap-2 justify-center items-center">
                 <Star className="fill-yellow-400 text-yellow-400" />
-                <span>{book.averageRating}</span>
+                <span>{book?.averageRating}</span>
               </div>
             </CardContent>
             <CardFooter className="items-center justify-center">
@@ -357,31 +257,16 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
                   <Button
                     className="bg-[oklch(0.97 0.02 85)] hover:bg-[oklch(0.97 0.02 85)] border-none shadow-none hover:scale-150 transition-transform duration-200 ease-in-out px-0"
                     onClick={() => {
-                      handleLike(book._id);
+                      handleLike(book?._id);
                     }}
                   >
-                    <Heart
-                      className={`w-40 h-40 ${
-                        likedBooks?.includes(book._id)
-                          ? "fill-red-700 text-red-700"
-                          : "text-red-700"
-                      }`}
-                    />
+                    <Heart className={`w-40 h-40 ${likedBooks?.includes(book?._id) ? "fill-red-700 text-red-700" : "text-red-700"}`} />
                   </Button>
                   <span>{totalLikes}</span>
                 </div>
 
-                <Button
-                  className="bg-[oklch(0.97 0.02 85)] hover:bg-[oklch(0.97 0.02 85)] hover:scale-150 transition-transform duration-200 ease-in-out shadow-none border-none "
-                  onClick={() => handleAddToRead(book._id, userId)}
-                >
-                  <Bookmark
-                    className={`w-60 h-60 ${
-                      savedBooks.includes(book._id)
-                        ? " text-red-700 fill-red-700"
-                        : "text-red-700 "
-                    }`}
-                  />
+                <Button className="bg-[oklch(0.97 0.02 85)] hover:bg-[oklch(0.97 0.02 85)] hover:scale-150 transition-transform duration-200 ease-in-out shadow-none border-none " onClick={() => handleAddToRead(book?._id, userId)}>
+                  <Bookmark className={`w-60 h-60 ${savedBooks.includes(book?._id) ? " text-red-700 fill-red-700" : "text-red-700 "}`} />
                 </Button>
               </div>
             </CardFooter>
@@ -390,15 +275,13 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
           <div className="col-span-2">
             <Card>
               <CardHeader>
-                <CardTitle className="text-2xl">
-                  {book.title.toUpperCase()}
-                </CardTitle>
+                <CardTitle className="text-2xl">{book?.title.toUpperCase()}</CardTitle>
                 <CardDescription className="flex gap-2 items-center">
                   <User className="w-4 h-4" />
-                  {book.author}
+                  {book?.author}
                 </CardDescription>
               </CardHeader>
-              <CardContent>{book.description}</CardContent>
+              <CardContent>{book?.description}</CardContent>
               <Separator />
               <div className="grid grid-cols-2 gap-4 p-5">
                 <div className="flex flex-col">
@@ -406,12 +289,12 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
                   <div className="flex gap-2 items-center">
                     <Building className="text-muted-foreground w-4 h-4" />
                     <span className="text-muted-foreground">Publisher:</span>
-                    <span>{book.publisher}</span>
+                    <span>{book?.publisher}</span>
                   </div>
                   <div className="flex gap-2 items-center ">
                     <Calendar className="text-muted-foreground w-4 h-4" />
                     <span className="text-muted-foreground">Published:</span>
-                    <span>{book.publishedDate?.split("T")[0] || ""}</span>
+                    <span>{book?.publishedDate?.split("T")[0] || ""}</span>
                   </div>
                 </div>
 
@@ -420,14 +303,14 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
                   <div className="flex gap-2 items-center">
                     <Globe className="text-muted-foreground w-4 h-4" />
                     <span className="text-muted-foreground">Language:</span>
-                    <span>{book.language}</span>
+                    <span>{book?.language}</span>
                   </div>
                   <div className="flex gap-2 ">
                     <Bookmark className="text-muted-foreground w-4 h-4 mt-1 " />
                     <div className="grid grid-cols-[auto_1fr] gap-2 ">
                       <span className="text-muted-foreground ">Genre:</span>
                       <div className="flex gap-1 flex-wrap mt-1">
-                        {book.genre.map((val, idx) => (
+                        {book?.genre.map((val, idx) => (
                           <Badge key={idx} className="bg-red-700">
                             {val}
                           </Badge>
@@ -439,25 +322,13 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
               </div>
               <Separator />
               <div className="flex justify-center px-5">
-                <Button onClick={(e) => handleBookAction(e, book._id, userId)}>
-                  {getButtonText(
-                    book._id,
-                    userId,
-                    borrowedBooks,
-                    reservedBooks
-                  )}
-                </Button>
+                <Button onClick={(e) => handleBookAction(e, book?._id, userId)}>{getButtonText(book?._id, userId, borrowedBooks, reservedBooks)}</Button>
               </div>
             </Card>
           </div>
         </div>
         <div className="flex flex-col mt-10">
-          <Textarea
-            value={comment}
-            placeholder="write review"
-            className="h-30 mb-5"
-            onChange={(e) => setComment(e.target.value)}
-          />
+          <Textarea value={comment} placeholder="write review" className="h-30 mb-5" onChange={(e) => setComment(e.target.value)} required />
           <Button onClick={(e) => handleReview()}>Add Review</Button>
         </div>
 

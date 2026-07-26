@@ -39,26 +39,44 @@ const getAllBook = async (req, res) => {
   });
 };
 
-const fetchBookWithoutPagination = async (req, res) => {
-  const books = await Book.find();
+const getBookById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
 
-  res.json(books);
+    res.status(200).json(book);
+  } catch (error) {
+    console.error("Error fetching book:", error);
+    res.status(500).json({ message: "Server error while fetching book" });
+  }
+};
+
+const fetchBookWithoutPagination = async (req, res) => {
+  try {
+    const books = await Book.find();
+    res.status(200).json(books);
+  } catch (error) {
+    console.error("Error fetching book:", error);
+    res.status(500).json({ message: "Server error while fetching book" });
+  }
 };
 
 const getFeaturedBook = async (req, res) => {
-  const books = await Book.find({ featured: true });
+  const books = await Book.find({ featured: true }).limit(8);
   res.status(200).json(books);
 };
 
 const getPopularBook = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 15;
-
   const skip = (page - 1) * limit;
 
-  const books = await Book.find({ popular: true }).skip(skip).limit(limit);
-
-  const total = await Book.countDocuments({ popular: true });
+  const filter = { averageRating: { $gt: 4.5 } };
+  const books = await Book.find(filter).sort({ averageRating: -1, _id: 1 }).skip(skip).limit(limit);
+  const total = await Book.countDocuments(filter);
 
   res.json({
     books,
@@ -99,10 +117,7 @@ const deleteBook = async (req, res) => {
 const searchBook = async (req, res) => {
   const { search } = req.query;
   const searchedBooks = await Book.find({
-    $or: [
-      { title: { $regex: `${search}`, $options: "i" } },
-      { author: { $regex: `${search}`, $options: "i" } },
-    ],
+    $or: [{ title: { $regex: `${search}`, $options: "i" } }, { author: { $regex: `${search}`, $options: "i" } }],
   });
 
   if (!searchedBooks) {
@@ -142,9 +157,7 @@ const borrowBook = async (req, res) => {
   const book = await Book.findOne({ _id: bookId, borrowerId: null });
 
   if (book.reservedBy.includes(userId)) {
-    book.reservedBy = book.reservedBy.filter(
-      (user) => user.toString() !== userId
-    );
+    book.reservedBy = book.reservedBy.filter((user) => user.toString() !== userId);
   }
   book.borrowerId = userId;
   book.status = "unavailable";
@@ -168,7 +181,7 @@ const reserveBook = async (req, res) => {
     {
       $push: { reservedBy: userId },
     },
-    { new: true }
+    { new: true },
   );
   if (!book) {
     return res.status(401).json({ message: "book not found" });
@@ -199,14 +212,9 @@ const getReservedBooks = async (req, res) => {
   try {
     const { userId, all } = req.query;
     if (all === "no") {
-      const reservedBooks = await Book.find(
-        { reservedBy: userId },
-        { _id: 1 }
-      ).lean();
+      const reservedBooks = await Book.find({ reservedBy: userId }, { _id: 1 }).lean();
 
-      const reservedBooksById = reservedBooks.map((book) =>
-        book._id.toString()
-      );
+      const reservedBooksById = reservedBooks.map((book) => book._id.toString());
 
       return res.json(reservedBooksById);
     }
@@ -224,11 +232,7 @@ const getReservedBooks = async (req, res) => {
 const removeBorrowedId = async (req, res) => {
   try {
     const { userId, bookId } = req.body;
-    const book = await Book.findOneAndUpdate(
-      { _id: bookId, borrowerId: userId },
-      { $unset: { borrowerId: "" }, $set: { status: "available" } },
-      { new: true }
-    );
+    const book = await Book.findOneAndUpdate({ _id: bookId, borrowerId: userId }, { $unset: { borrowerId: "" }, $set: { status: "available" } }, { new: true });
 
     return res.status(200).json(book?.status);
   } catch (err) {
@@ -243,9 +247,7 @@ const removeReservedBook = async (req, res) => {
     const book = await Book.findOne({ _id: bookId });
 
     if (book.reservedBy.includes(userId)) {
-      const newReservedBy = book.reservedBy.filter(
-        (user) => user.toString() !== userId
-      );
+      const newReservedBy = book.reservedBy.filter((user) => user.toString() !== userId);
       book.reservedBy = newReservedBy;
       book.save();
     }
@@ -291,6 +293,7 @@ export {
   addBook,
   deleteBook,
   getAllBook,
+  getBookById,
   fetchBookWithoutPagination,
   searchBook,
   getBookByGenre,

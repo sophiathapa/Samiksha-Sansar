@@ -17,7 +17,7 @@ export function AlertMessage({
   onClose: () => void;
 }) {
   return (
-    <Alert variant={status ? "default" : "destructive"} className="fixed top-4 right-4 w-auto max-w-sm z-[100] shadow-lg">
+    <Alert variant={status ? "default" : "destructive"} className="w-auto max-w-sm shadow-lg">
       <AlertCircleIcon />
       <AlertTitle>{status ? "Success" : "Error"}</AlertTitle>
       <AlertDescription>{message}</AlertDescription>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { Label } from "@radix-ui/react-dropdown-menu";
+import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { ChevronDown, Star, Upload, X } from "lucide-react";
 import { Button } from "../ui/button";
@@ -9,19 +9,9 @@ import { cn } from "@/lib/utils";
 import axios from "axios";
 import { Badge } from "../ui/badge";
 import { useRouter } from "next/navigation";
+import { AlertMessage } from "../Alert/AlertMessage";
+import { Book } from "@/types/book";
 
-export type Book = {
-  title: string;
-  author: string;
-  publishedDate: string;
-  publisher: string;
-  description: string;
-  genre: string[];
-  averageRating: number;
-  language: string;
-  coverImg: string;
-  totalCounts: number;
-};
 
 interface editCardProps {
   book: Book;
@@ -34,7 +24,9 @@ const EditCard = ({ book, onback }: editCardProps) => {
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>();
-  const [image, setImage] = useState(book.coverImg);
+  const [image, setImage] = useState<string | File>(book.coverImg);
+  const [status, setStatus] = useState<{success:boolean, message:string} | null>(null);
+
 
   const router = useRouter();
 
@@ -90,7 +82,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setImagePreview(result);
-        setBookData((prev) => ({ ...prev, coverImg: file }));
+        setBookData((prev: any) => ({ ...prev, coverImg: file }));
       };
       reader.readAsDataURL(file);
     }
@@ -116,11 +108,11 @@ const EditCard = ({ book, onback }: editCardProps) => {
         formData
       )
       .then(() => {
-        alert("Book updated successfully!");
+        setStatus({success:true, message:"Book edited successfully"})
         
       })
       .catch((error) => {
-        alert(error.message);
+        setStatus({success:false, message:`${error?.response?.data?.message}`})
       });
   };
 
@@ -165,7 +157,19 @@ const EditCard = ({ book, onback }: editCardProps) => {
     }));
   };
 
+  const closeAlert = () => {
+    setStatus(null);
+  }
+
   return (
+    <>
+    {status && (
+      <div className="fixed top-0 right-4 z-10">
+        {
+          AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
+        }
+      </div>
+    )}
     <div>
       <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
         <CardHeader className="pb-8">
@@ -185,7 +189,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
               <div className="space-y-6">
                 <div className="space-y-2">
                   <Label
-                    for="title"
+                    htmlFor="title"
                     className="text-sm font-semibold text-foreground flex items-center gap-2"
                   >
                     Book Title <span className="text-destructive">*</span>
@@ -205,7 +209,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
 
                 <div className="space-y-2">
                   <Label
-                    for="publisher"
+                    htmlFor="publisher"
                     className="text-sm font-semibold text-foreground"
                   >
                     Publisher
@@ -224,7 +228,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
 
                 <div className="space-y-2">
                   <Label
-                    for="language"
+                    htmlFor="language"
                     className="text-sm font-semibold text-foreground"
                   >
                     Language
@@ -273,7 +277,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
                           size="sm"
                           className="absolute -top-2 -right-2 rounded-full h-8 w-8 p-0 shadow-lg"
                           onClick={() => {
-                            setImage(null);
+                            setImage("");
                             setBookData((prev) => ({
                               ...prev,
                               coverImg: "",
@@ -537,6 +541,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 };
 

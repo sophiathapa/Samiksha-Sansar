@@ -1,14 +1,15 @@
 "use client";
 import BookDetailCard from "@/components/BookDetailCard";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
+import { Book } from "@/types/book";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const Popular = () => {
-  const [selectBook, setSelectBook] = useState(null);
+  const [selectBook, setSelectBook] = useState<Book|null>(null);
   const router = useRouter();
 
-  const handleBookSelect = (book) => {
+  const handleBookSelect = (book: Book) => {
     setSelectBook(book);
   };
   return (

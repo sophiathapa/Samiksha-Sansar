@@ -6,6 +6,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import BookCard from "@/components/user/BookCard";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import CategoryFilter from "@/components/user/CategoryFilter";
+import { Book } from "@/types/book";
 import axios from "axios";
 import { CircleX, Search } from "lucide-react";
 import React, { useState } from "react";
@@ -15,9 +16,9 @@ const Home = () => {
   const [searchBooks, setSearchBooks] = useState([]);
   const [genre, setGenre] = useState("All");
 
-  const [selectBook, setSelectBook] = useState(null);
+  const [selectBook, setSelectBook] = useState<Book|null>(null);
 
-  const handleSelectBook = (book) => {
+  const handleSelectBook = (book: Book) => {
     setSelectBook(book);
   };
 

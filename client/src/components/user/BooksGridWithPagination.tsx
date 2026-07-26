@@ -8,17 +8,19 @@ import {
 } from "@/components/ui/pagination";
 import BookCard from "./BookCard";
 import axios from "axios";
+import { Book } from "@/types/book";
+
 
 interface BooksGridWithPaginationProps {
   query: string;
-  onBookSelect :()=> void;
+  onBookSelect: (book: Book)=> void;
 }
 
 const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPaginationProps) => {
   const [page, setPage] = useState<number>(1);
   const [books, setBooks] = useState([]);
-  const [totalPages, setTotalPages] = useState<number>();
-  const [currentPage, setCurrentPage] = useState<number>();
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(0);
 
   const fetchBook = async () => {
     const fetchedBooks = await axios.get(

@@ -99,7 +99,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2"
-                      onClick={() => router.push("/user/borrowed")}
+                      onClick={() => router.push("/user/books/borrowed")}
                     >
                       <BookOpenCheck className="w-4 h-4 text-gray-600" />
                       Borrowed Books

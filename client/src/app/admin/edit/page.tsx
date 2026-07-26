@@ -9,14 +9,17 @@ import { CircleX, Search } from "lucide-react";
 import React, { useState } from "react";
 import EditCard from "@/components/admin/editCard";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
+import { AlertMessage } from "@/components/Alert/AlertMessage";
+import {  NewBook, Book } from "@/types/book";
+
 
 const Edit = () => {
   const [search, setSearch] = useState("");
   const [searchBooks, setSearchBooks] = useState([]);
   const [genre, setGenre] = useState("All");
-  const [selectBook, setSelectBook] = useState(null);
+  const [selectBook, setSelectBook] = useState<Book|null>(null);
 
-  const handleSelectBook = (book) => {
+  const handleSelectBook = (book: Book) => {
     setSelectBook(book);
   };
 

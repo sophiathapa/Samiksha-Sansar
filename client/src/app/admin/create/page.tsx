@@ -1,5 +1,4 @@
 "use client";
-
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,21 +12,10 @@ import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import axios from "axios";
 import { AlertMessage } from "@/components/Alert/AlertMessage";
-
-interface BookFormData {
-  title: string;
-  author: string;
-  publishedDate: string;
-  publisher: string;
-  description: string;
-  genre: string[];
-  averageRating: number;
-  language: string;
-  coverImg: string;
-}
+import { NewBook } from "@/types/book";
 
 export default function AddBookForm() {
-  const [bookData, setBookData] = useState<BookFormData>({
+  const [bookData, setBookData] = useState<NewBook>({
     title: "",
     author: "",
     publishedDate: "",
@@ -43,10 +31,10 @@ export default function AddBookForm() {
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [status, setStatus] = useState<{success:boolean, message:string} | null>({success:true, message:"Book added successfully"});
+  const [status, setStatus] = useState<{success:boolean, message:string} | null>(null);
 
   const handleInputChange = (
-    field: keyof BookFormData,
+    field: keyof NewBook,
     value: string | number
   ) => {
     setBookData((prev) => ({ ...prev, [field]: value }));
@@ -100,7 +88,7 @@ export default function AddBookForm() {
       reader.onload = (e) => {
         const result = e.target?.result as string;
         setImagePreview(result);
-        setBookData((prev:any) => ({ ...prev, coverImg: file }));
+        setBookData((prev:NewBook) => ({ ...prev, coverImg: file }));
       };
       reader.readAsDataURL(file);
     }
@@ -183,18 +171,16 @@ export default function AddBookForm() {
     }));
   };
 
-  // if (status) {
-  //   return (
-  //     <div className="flex justify-center items-center">
-  //       {
-  //         AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
-  //       }
-  //     </div>
-  //   )
-  // }
 
   return (
     <>
+     {status && (
+      <div className="fixed top-0 right-4 z-10">
+        {
+          AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
+        }
+      </div>
+      )}
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
         <SidebarTrigger className="-ml-1" />
         <div className="flex items-center gap-2">
@@ -561,9 +547,6 @@ export default function AddBookForm() {
             </CardContent>
           </Card>
         </div>
-           {status && (
-            AlertMessage({status:status.success, message: status.message, onClose: closeAlert})
-      )}
       </div>
     </>
   );

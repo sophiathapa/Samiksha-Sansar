@@ -19,6 +19,7 @@ import {
   getNewBook,
   getPopularBook,
   fetchBookWithoutPagination,
+  getBookById
 } from "../controllers/book.js";
 import multer from "multer";
 
@@ -38,6 +39,7 @@ const upload = multer({ storage: storage });
 
 router.post("/book", upload.single("coverImg"), addBook);
 router.get("/books", getAllBook);
+router.get("/getBookById/:id", getBookById)
 router.get("/allBooks", fetchBookWithoutPagination);
 router.get("/newBooks", getNewBook);
 router.get("/popularBooks", getPopularBook);
