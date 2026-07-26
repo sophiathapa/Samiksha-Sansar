@@ -4,9 +4,6 @@ import BookCard from "@/components/user/BookCard";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useDispatch, useSelector } from "react-redux";
-import BookDetailCard from "@/components/BookDetailCard";
-import { persistor, RootState, useAppDispatch } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import { Book } from "@/types/book";
@@ -16,7 +13,6 @@ const UserPage = () => {
   const [popularBooks, setPopularBooks] = useState([]);
   const [genre, setGenre] = useState("");
   const router = useRouter();
-  const dispatch = useAppDispatch();
 
   const handleSelectBook = (book: Book) => {
     router.push(`/user/books/${book._id}`);

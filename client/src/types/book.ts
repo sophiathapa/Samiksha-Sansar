@@ -7,11 +7,20 @@ export interface NewBook {
   genre: string[];
   averageRating: number;
   language: string;
-  coverImg: string | File ;
+  coverImg: File | string ;
 }
 
-export interface Book extends NewBook {
+export interface Book {
   _id: string;
+  title: string;
+  author: string;
+  publishedDate: string;
+  publisher: string;
+  description: string;
+  genre: string[];
+  averageRating: number;
+  language: string;
+  coverImg: string ;
   status: string;
   borrowerId: {};
   reservedBy: string[];

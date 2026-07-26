@@ -98,15 +98,15 @@ export default function AddBookForm() {
     e.preventDefault();
     // Here you would typically send the data to your API
     const formData = new FormData();
-    formData.append("title", bookData.title);
-    formData.append("author", bookData.author);
-    formData.append("publishedDate", bookData.publishedDate);
-    formData.append("publisher", bookData.publisher);
-    formData.append("description", bookData.description);
-    formData.append("genre[]", JSON.stringify(bookData.genre));
-    formData.append("averageRating", bookData.averageRating.toString());
-    formData.append("coverImg", bookData.coverImg);
-    formData.append("language", bookData.language);
+    formData.append("title", bookData?.title);
+    formData.append("author", bookData?.author);
+    formData.append("publishedDate", bookData?.publishedDate);
+    formData.append("publisher", bookData?.publisher);
+    formData.append("description", bookData?.description);
+    formData.append("genre[]", JSON.stringify(bookData?.genre));
+    formData.append("averageRating", bookData?.averageRating.toString());
+    formData.append("coverImg", bookData?.coverImg);
+    formData.append("language", bookData?.language);
 
     axios
       .post(`${process.env.NEXT_PUBLIC_API_URL}/book`, formData)
