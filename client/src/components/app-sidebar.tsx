@@ -1,3 +1,4 @@
+"use client"
 import {
   Calendar,
   Home,
@@ -5,6 +6,7 @@ import {
   Settings,
   User2,
   ChevronUp,
+  LogOut,
 } from "lucide-react"
 
 import {
@@ -21,14 +23,10 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useRouter } from "next/navigation"
 
 // Menu items.
 const items = [
-  {
-    title: "Home",
-    url: "/admin/home",
-    icon: Home,
-  },
   {
     title: "Add Book",
     url: "/admin/create",
@@ -41,22 +39,22 @@ const items = [
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/admin/setting",
     icon: Settings,
   },
 ]
 
 
 export function AppSidebar() {
+  const router = useRouter();
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
+              <a href="/admin/home">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  
                   <Home className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -119,7 +117,10 @@ export function AppSidebar() {
                   <Settings />
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={()=>router.push("/")}>
+                  <LogOut/>
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
