@@ -36,12 +36,11 @@ const Singin = () => {
         router.push("/login");
       }
     } catch (error: any) {
+      setLoading(false);
       setRegistrationStatus({
         success: false,
         message: error?.response?.data?.message || "Registration failed",
       });  
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -59,14 +58,6 @@ const Singin = () => {
       handleSubmit(values);
     },
   });
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="animate-spin h-8 w-8 text-primary" />
-      </div>
-    );
-  }
 
 
   return (
@@ -139,8 +130,8 @@ const Singin = () => {
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" onClick={formik.handleSubmit as any} disabled={formik.isSubmitting}>
-            {formik.isSubmitting ? "Creating Account..." : "Create Account"}
+          <Button type="submit" className="w-full" onClick={formik.handleSubmit as any} disabled={loading}>
+            {loading ? <Loader2 className="animate-spin h-4 w-4 text-white" /> : "Create Account"}
           </Button>
           <div className="text-center">
             <p className="text-muted-foreground">

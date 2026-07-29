@@ -18,7 +18,6 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/lib/redux/features/user/userSlice";
-import { AlertMessage } from "@/components/Alert/AlertMessage";
 
 const Login = () => {
   const router = useRouter();
@@ -42,19 +41,18 @@ const Login = () => {
       const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/login`, values);
       const { _id, firstName, email } = data.user;
       const  {token } = data
-      if (data.isLoggedIn) {
+      if (data?.isLoggedIn) {
         router.push("/user/home");
         dispatch(
           setUser({ name: firstName, id: _id, email: email, token: token })
         );
       }
     } catch (error: any) {
+      setLoading(false);
       setLoginStatus({
         success: false,
         message: error?.response?.data?.message || "Login failed",
       }); 
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -68,14 +66,6 @@ const Login = () => {
       handleSubmit(values);
     },
   });
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="animate-spin h-8 w-8 text-primary" />
-      </div>
-    );
-  }
 
   return (
     <>
@@ -91,7 +81,7 @@ const Login = () => {
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">
-            Sign In
+            Sign In            
           </CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access your account
@@ -173,9 +163,9 @@ const Login = () => {
             type="submit"
             className="w-full"
             onClick={formik.handleSubmit as any}
-            disabled={formik.isSubmitting}
+            disabled={loading}
           >
-            {formik.isSubmitting ? "Signing In..." : "Sign In"}
+            {loading ? <Loader2 className="animate-spin h-4 w-4 text-white" /> : "Sign In"}
           </Button>
           <div className="text-center">
             <p className="text-muted-foreground">
