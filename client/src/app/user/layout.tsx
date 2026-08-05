@@ -1,5 +1,4 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -9,19 +8,27 @@ import { persistor, RootState } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { useSelector } from "react-redux";
-import { Book } from "@/types/book";
+import { Book, Notification } from "@/types/book";
+import { useSocket } from "@/hooks/useSocket";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
 
 const SEARCH_DEBOUNCE_MS = 500;
+const MAX_BADGE_COUNT = 9;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const user = useSelector((state: RootState) => state.user);
-  const { name: userName } = user;
-
+  const { name: userName, id: userId } = user;
   const [search, setSearch] = useState("");
   const [searchBooks, setSearchBooks] = useState<Book[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
+  const socket = useSocket();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   const handleLogout = () => {
     persistor.purge();
@@ -73,6 +80,104 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return () => clearTimeout(timer);
   }, [search]);
 
+  // --- Fetch notifications from DB on mount ---
+  const fetchNotifications = useCallback(async () => {
+    if (!userId) return;
+    setIsLoadingNotifications(true);
+    try {
+      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/notifications`,
+        { params: {userId}},
+        );
+      // Expecting: { notifications: Notification[], unreadCount: number }
+      setNotifications(data.notifications ?? data);
+      setUnreadCount(
+        data.unreadCount ?? (data.notifications ?? data).filter((n: Notification) => !n.read).length
+      );
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // --- Realtime notification via socket ---
+  useEffect(() => {
+    socket.emit("joinRoom", `user:${userId}`);
+    const handleNewMessage = (msg: Notification) => {
+      toast(msg.message, {
+        position: "top-right",
+      });
+      // Prepend the new notification and bump unread count
+      setNotifications((prev) => [msg, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on("notification", handleNewMessage);
+
+    return () => {
+      socket.off("notification", handleNewMessage); // remove THIS listener only
+    };
+  }, [socket, userId]);
+
+  // --- Mark a single notification as read ---
+  const markAsRead = useCallback(async (notification: Notification) => {
+    if (notification.read) return;
+
+    // Optimistic update
+    setNotifications((prev) =>
+      prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n))
+    );
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    try {
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notification._id}/read`,
+        {},
+      );
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+      // Revert on failure
+      setNotifications((prev) =>
+        prev.map((n) => (n._id === notification._id ? { ...n, read: false } : n))
+      );
+      setUnreadCount((prev) => prev + 1);
+    }
+  }, []);
+
+  // --- Mark all as read ---
+  const markAllAsRead = useCallback(async () => {
+    if (unreadCount === 0) return;
+
+    const previousNotifications = notifications;
+    const previousUnreadCount = unreadCount;
+
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    try {
+      await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/notifications/readAll`,
+        {},
+        { params: {userId} }
+      );
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+      setNotifications(previousNotifications);
+      setUnreadCount(previousUnreadCount);
+    }
+  }, [notifications, unreadCount]);
+
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification);
+    setIsNotificationOpen(false);
+    // Optional: route based on notification type
+    // if (notification.link) router.push(notification.link);
+  };
+
   const isDropdownOpen = Boolean(search);
 
   return (
@@ -95,7 +200,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {isDropdownOpen && (
             <div className="absolute z-30 flex flex-col py-4 mt-2 rounded-2xl bg-card w-full shadow-lg max-h-96 overflow-y-auto">
               {isSearching && !searchBooks ? (
-                <div className="py-2 text-muted-foreground text-sm">Searching…</div>
+                <div className="px-4 py-2 text-muted-foreground text-sm">Searching…</div>
               ) : searchBooks && searchBooks.length > 0 ? (
                 searchBooks.map((book) => (
                   <div
@@ -110,14 +215,86 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                 ))
               ) : (
-                <div className="p-2 text-muted-foreground text-sm">No book with that title/author</div>
+                <div className="px-4 py-2 text-muted-foreground text-sm">No book with that title/author</div>
               )}
             </div>
           )}
         </div>
 
         <div className="flex items-center gap-10">
-          <Bell className="text-muted-foreground" />
+          {/* --- Notification bell + dropdown --- */}
+          <DropdownMenu open={isNotificationOpen} onOpenChange={setIsNotificationOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="relative outline-none"
+                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
+              >
+                <Bell className="text-muted-foreground" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">
+                    {unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount}
+                  </span>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent className="w-80 bg-secondary mt-1 shadow-lg border border-gray-200 rounded-lg z-50 p-0" align="end">
+              <div className="flex items-center justify-between px-3 py-2">
+                <DropdownMenuLabel className="text-sm font-semibold text-gray-500 p-0">
+                  Notifications
+                </DropdownMenuLabel>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={markAllAsRead}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    Mark all as read
+                  </button>
+                )}
+              </div>
+
+              <DropdownMenuSeparator className="my-0 border-gray-200" />
+
+              <div className="max-h-96 overflow-y-auto">
+                {isLoadingNotifications ? (
+                  <div className="px-4 py-6 flex justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : notifications.length === 0 ? (
+                  <div className="px-4 py-6 text-center text-muted-foreground text-sm">
+                    No notifications yet
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem
+                      key={notification._id}
+                      className={`flex flex-col items-start gap-0.5 rounded-none p-3 cursor-pointer border-b border-gray-100 last:border-b-0 ${
+                        notification.read ? "bg-transparent" : "bg-primary/5"
+                      } hover:bg-gray-100`}
+                      onClick={() => handleNotificationClick(notification)}
+                    >
+                      <div className="flex items-start gap-2 w-full">
+                        {!notification.read && (
+                          <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />
+                        )}
+                        <p className={`text-sm ${notification.read ? "text-muted-foreground" : "text-foreground font-medium"}`}>
+                          {notification.message}
+                        </p>
+                      </div>
+                      {notification.createdAt && (
+                        <span className="text-xs text-muted-foreground pl-3.5">
+                          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                        </span>
+                      )}
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="w-10 h-10">
@@ -165,8 +342,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </DropdownMenu>
         </div>
       </nav>
-
-      {children}
+      <div className="px-24 py-10">{children}</div>
     </div>
   );
 }

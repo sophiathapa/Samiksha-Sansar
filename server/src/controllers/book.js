@@ -1,5 +1,7 @@
 import Book from "../models/book.js";
 import User from "../models/user.js";
+import Notification from "../models/notifications.js";
+import { io } from "../index.js";
 
 const addBook = async (req, res) => {
   const book = await Book.findOne({
@@ -233,6 +235,24 @@ const removeBorrowedId = async (req, res) => {
   try {
     const { userId, bookId } = req.body;
     const book = await Book.findOneAndUpdate({ _id: bookId, borrowerId: userId }, { $unset: { borrowerId: "" }, $set: { status: "available" } }, { new: true });
+
+    const reservedUser = book?.reservedBy?.[0];
+    const bookTitle = book?.title;
+
+    if (reservedUser) {
+      // 1. persist notification — always happens
+      const notification = await Notification.create({
+        sender: userId,
+        recipient: reservedUser,
+        type: "book-available",
+        bookId,
+        message: `${bookTitle} book is now available to borrow.`,
+        read: false,
+      });
+
+      // 2. push in real-time IF they're connected
+      io.to(`user:${reservedUser}`).emit("notification", notification);
+    }
 
     return res.status(200).json(book?.status);
   } catch (err) {

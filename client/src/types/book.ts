@@ -26,3 +26,13 @@ export interface Book {
   reservedBy: string[];
   totalLikes: number;
 }
+
+export interface Notification {
+  _id: string;
+  message: string;
+  read: boolean;
+  sender: string;
+  recipient: string;
+  type: string;
+  createdAt: string;
+}
