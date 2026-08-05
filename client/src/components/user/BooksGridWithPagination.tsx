@@ -30,14 +30,19 @@ const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPagination
     setTotalPages(fetchedBooks.data.totalPages);
     setCurrentPage(fetchedBooks.data.currentPage);
   };
+  
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
 
   useEffect(() => {
     fetchBook();
   }, [page, query]);
 
+
   return (
     <>
-      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-3 p-10">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-15 py-10">
         {books.map((b, i) => (
           <BookCard
             key={i}
@@ -48,75 +53,78 @@ const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPagination
           />
         ))}
       </div>
-      <Pagination>
-        <PaginationContent>
-          {currentPage !== 1 && (
-            <>
+      { books.length > 0 && (
+        <Pagination className="mt-10">
+          <PaginationContent>
+            {currentPage !== 1 && (
+              <>
+                <PaginationItem>
+                  <PaginationLink onClick={(e) => setPage(1)}>«</PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={(e) => setPage(page - 1)}>
+                    ←
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
+
+            {currentPage - 2 > 0 && (
               <PaginationItem>
-                <PaginationLink onClick={(e) => setPage(1)}>«</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink onClick={(e) => setPage(page - 1)}>
-                  ←
+                <PaginationLink onClick={() => setPage(currentPage - 2)}>
+                  {currentPage - 2}
                 </PaginationLink>
               </PaginationItem>
-            </>
-          )}
+            )}
 
-          {currentPage - 2 > 0 && (
-            <PaginationItem>
-              <PaginationLink onClick={() => setPage(currentPage - 2)}>
-                {currentPage - 2}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-
-          {currentPage - 1 > 0 && (
-            <PaginationItem>
-              <PaginationLink onClick={() => setPage(currentPage - 1)}>
-                {currentPage - 1}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-
-          <PaginationItem>
-            <PaginationLink onClick={() => setPage(currentPage)} isActive>
-              {currentPage}
-            </PaginationLink>
-          </PaginationItem>
-
-          {currentPage + 1 <= totalPages && (
-            <PaginationItem>
-              <PaginationLink onClick={() => setPage(currentPage + 1)}>
-                {currentPage + 1}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-
-          {currentPage + 2 <= totalPages && (
-            <PaginationItem>
-              <PaginationLink onClick={() => setPage(currentPage + 2)}>
-                {currentPage + 2}
-              </PaginationLink>
-            </PaginationItem>
-          )}
-
-          {currentPage !== totalPages && (
-            <>
+            {currentPage - 1 > 0 && (
               <PaginationItem>
-                <PaginationLink onClick={(e) => setPage(currentPage + 1)}>
-                  →
+                <PaginationLink onClick={() => setPage(currentPage - 1)}>
+                  {currentPage - 1}
                 </PaginationLink>
               </PaginationItem>
+            )}
+
+            <PaginationItem>
+              <PaginationLink onClick={() => setPage(currentPage)} isActive>
+                {currentPage}
+              </PaginationLink>
+            </PaginationItem>
+
+            {currentPage + 1 <= totalPages && (
               <PaginationItem>
-                <PaginationLink onClick={() => setPage(totalPages)}>
-                  »
+                <PaginationLink onClick={() => setPage(currentPage + 1)}>
+                  {currentPage + 1}
                 </PaginationLink>
               </PaginationItem>
-            </>
-          )}
-        </PaginationContent>
-      </Pagination>
+            )}
+
+            {currentPage + 2 <= totalPages && (
+              <PaginationItem>
+                <PaginationLink onClick={() => setPage(currentPage + 2)}>
+                  {currentPage + 2}
+                </PaginationLink>
+              </PaginationItem>
+            )}
+
+            {currentPage !== totalPages && (
+              <>
+                <PaginationItem>
+                  <PaginationLink onClick={(e) => setPage(currentPage + 1)}>
+                    →
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink onClick={() => setPage(totalPages)}>
+                    »
+                  </PaginationLink>
+                </PaginationItem>
+              </>
+            )}
+          </PaginationContent>
+        </Pagination>
+        )
+      }
     </>
   );
 };

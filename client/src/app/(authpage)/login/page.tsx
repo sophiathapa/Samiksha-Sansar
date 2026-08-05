@@ -39,12 +39,12 @@ const Login = () => {
     try {
       setLoading(true);
       const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/login`, values);
-      const { _id, firstName, email } = data.user;
+      const { _id, firstName, email, role } = data.user;
       const  {token } = data
       if (data?.isLoggedIn) {
         router.push("/user/home");
         dispatch(
-          setUser({ name: firstName, id: _id, email: email, token: token })
+          setUser({ name: firstName, id: _id, role: role, email: email, token: token })
         );
       }
     } catch (error: any) {

@@ -64,11 +64,11 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
 
   return (
     <article
-      className={`relative ${featured ? "w-44 md:w-56" : "w-32 md:w-36"}`}
+      className={`relative p-3 w-38 md:w-48 shrink-0`}
       onClick={onClick}
     >
       <Card
-        className="overflow-hidden border-0 shadow-md transform transition duration-200 ease-in-out
+        className="p-0 overflow-hidden border-0 shadow-md transform transition duration-200 ease-in-out
         hover:scale-105
         active:scale-110"
       >
@@ -76,9 +76,7 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
           src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
           alt={`${book.title} book cover by ${book.author}`}
           loading="lazy"
-          className={`block w-full object-cover ${
-            featured ? "h-64 md:h-80" : "h-44 md:h-52"
-          }`}
+          className={`block w-full object-cover h-50 md:h-60`}
         />
       </Card>
       <div className="mt-2">

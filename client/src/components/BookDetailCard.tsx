@@ -130,13 +130,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
             bookId,
             userId,
           });
-          toast.success("Book Reserved", {
-            position: "top-right",
-            action: {
-              label: "Undo",
-              onClick: () => console.log("Undo"),
-            },
-          });
+          toast.success("Book Reserved", { position: "top-right" });
         } catch (error: any) {
           toast.warning(error?.response?.data?.message,{ position: "top-right" });
         }

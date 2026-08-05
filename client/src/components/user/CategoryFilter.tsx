@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 const defaultCategories = [
   "All",
   "Fiction",
-  "Non-fiction",
+  "Non-Fiction",
   "Drama",
+  "Mystery",
   "Thriller",
   "Romance",
   "Educational",

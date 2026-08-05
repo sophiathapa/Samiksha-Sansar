@@ -9,6 +9,7 @@ import {
 export interface UserState {
   id: string;
   name: string;
+  role: string;
   email: string;
   token: string;
   likedBooks: string[];
@@ -20,6 +21,7 @@ export interface UserState {
 const initialState: UserState = {
   id: "",
   name: "",
+  role: "",
   email: "",
   token: "",
   likedBooks: [],
@@ -35,6 +37,7 @@ export const userSlice = createSlice({
     setUser: (state, action) => {
       state.id = action.payload.id;
       state.name = action.payload.name;
+      state.role = action.payload.role;
       state.email = action.payload.email;
       state.token = action.payload.token;
     },

@@ -36,13 +36,13 @@ const UserPage = () => {
   return (
     <>
       {/* Main content */}
-      <main className="col-span-12 px-7 py-4">
+      <main className="flex flex-col items-center justify-center">
         <CategoryFilter genre={genre} setGenre={setGenre} />
         {genre === "" ? (
           <>
             {/* Popular Bestsellers */}
             <section
-              className="mt-6 md:mt-8"
+              className="mt-10"
               aria-labelledby="popular-heading"
             >
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -86,7 +86,7 @@ const UserPage = () => {
 
             {/* Can be interesting */}
             <section
-              className="mt-8 md:mt-10"
+              className="mt-10 w-full"
               aria-labelledby="interesting-heading"
             >
               <h2
@@ -98,7 +98,7 @@ const UserPage = () => {
               <p className="mt-2 text-muted-foreground">
                 Explore Fresh Arrivals and Find Your Next Great Read.
               </p>
-              <div className="mt-4 shelf">
+
                 <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
                   {newBooks.map((b, i) => (
                     <BookCard
@@ -110,7 +110,6 @@ const UserPage = () => {
                     />
                   ))}
                 </div>
-              </div>
             </section>
           </>
         ) : genre === "All" ? (
