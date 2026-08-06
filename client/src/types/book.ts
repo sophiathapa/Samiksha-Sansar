@@ -35,4 +35,6 @@ export interface Notification {
   recipient: string;
   type: string;
   createdAt: string;
+  bookId: string;
+  commentId: string;
 }

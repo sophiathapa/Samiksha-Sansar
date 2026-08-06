@@ -2,6 +2,7 @@ import Book from "../models/book.js";
 import User from "../models/user.js";
 import Notification from "../models/notifications.js";
 import { io } from "../index.js";
+import { createNotification } from "./notifications.js";
 
 const addBook = async (req, res) => {
   const book = await Book.findOne({
@@ -241,9 +242,9 @@ const removeBorrowedId = async (req, res) => {
 
     if (reservedUser) {
       // 1. persist notification — always happens
-      const notification = await Notification.create({
-        sender: userId,
+      const notification = await createNotification({
         recipient: reservedUser,
+        sender: userId,
         type: "book-available",
         bookId,
         message: `${bookTitle} book is now available to borrow.`,

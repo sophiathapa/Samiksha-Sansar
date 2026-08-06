@@ -1,5 +1,24 @@
 import User from "../models/user.js";
 import Notification from "../models/notifications.js";
+import { createNotification } from "../service/notifications.js";
+
+const createNotificationController = async (req, res) => {
+  try {
+    const notification = await createNotification(req.body);
+
+    return res.status(201).json({message: "Notification created"});
+  } catch (error) {
+    console.error(error);
+
+    if (error.message === "Recipient user not found") {
+      return res.status(404).json({ message: error.message });
+    }
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
 
 const getNotifications = async (req, res) => {
   try {
@@ -49,4 +68,4 @@ const markAllNotificationAsRead = async (req, res) => {
   }
 };
 
-export { getNotifications, markNotificationAsRead, markAllNotificationAsRead };
+export { createNotification, getNotifications, markNotificationAsRead, markAllNotificationAsRead };

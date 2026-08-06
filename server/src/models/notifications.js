@@ -13,12 +13,20 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["like", "comment", "follow", "book-available"],
+      enum: ["book-available", "comment-reply"],
     },
     message: String,
     read: {
       type: Boolean,
       default: false,
+    },
+    bookId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Book",
+    },
+    commentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
     },
   },
   { timestamps: true }
