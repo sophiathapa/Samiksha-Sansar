@@ -265,7 +265,8 @@ const EditCard = ({ book, onback }: editCardProps) => {
                       <div className="relative">
                         <img
                           src={
-                            `${process.env.NEXT_PUBLIC_API_URL}/uploads/${image}` ||
+                            `${image}
+                            ` ||
                             "/placeholder.svg"
                           }
                           alt="Cover preview"

@@ -65,15 +65,16 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
   return (
     <article
       className={`relative p-3 w-38 md:w-48 shrink-0`}
-      onClick={onClick}
+      // onClick={onClick}
     >
       <Card
         className="p-0 overflow-hidden border-0 shadow-md transform transition duration-200 ease-in-out
         hover:scale-105
         active:scale-110"
+        onClick={onClick}
       >
         <img
-          src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}`}
+          src={book.coverImg}
           alt={`${book.title} book cover by ${book.author}`}
           loading="lazy"
           className={`block w-full object-cover h-50 md:h-60`}

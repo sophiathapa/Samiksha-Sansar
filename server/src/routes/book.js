@@ -21,21 +21,9 @@ import {
   fetchBookWithoutPagination,
   getBookById
 } from "../controllers/book.js";
-import multer from "multer";
+import upload from "../middleware/multer.js";
 
 const router = express.Router();
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + Math.round(Math.random());
-    cb(null, uniqueSuffix + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
 
 router.post("/book", upload.single("coverImg"), addBook);
 router.get("/books", getAllBook);

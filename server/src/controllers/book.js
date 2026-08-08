@@ -18,7 +18,7 @@ const addBook = async (req, res) => {
     return res.status(400).json({ message: "Image is required" });
   }
 
-  req.body.coverImg = req.file.filename;
+  req.body.coverImg = req.file.path;
   req.body.genre = JSON.parse(req.body.genre);
   await Book.create(req.body);
   res.status(201).json("Book created");
@@ -131,11 +131,11 @@ const searchBook = async (req, res) => {
 
 const editBook = async (req, res) => {
   const { id } = req.query;
-  req.body.coverImg = req.file?.filename;
+  req.body.coverImg = req.file?.path;
   req.body.genre = JSON.parse(req.body.genre);
   await Book.findByIdAndUpdate(id, { $set: req.body }, { $new: true });
 
-  if (!req.query.id) {
+  if (!id) {
     return res.status(401).json(" Book with that id not found");
   }
 
