@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 
 const connect = async()=> {
-  const res = await mongoose.connect('mongodb://127.0.0.1:27017/bookclub');
+  const res = await mongoose.connect(process.env.MONGO_URL);
   if (res){
   console.log("DB connected")
   }
