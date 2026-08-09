@@ -42,7 +42,7 @@ export function FeaturedBooks() {
                 <div className="aspect-[3/4] mb-4 rounded-lg overflow-hidden bg-muted">
                   <img
                     src={
-                      `${process.env.NEXT_PUBLIC_API_URL}/uploads/${book.coverImg}` ||
+                      `${book.coverImg}` ||
                       "/placeholder.svg"
                     }
                     alt={`${book.title} — book cover`}

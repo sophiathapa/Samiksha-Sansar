@@ -6,6 +6,7 @@ import {
   register,
   removeSavedBooks,
   saveBook,
+  getLikedBooks,
 } from "../controllers/user.js";
 
 const router = express.Router();
@@ -16,4 +17,5 @@ router.post("/login", login);
 router.patch("/saveBook", saveBook);
 router.get("/getSavedBooks", getSavedBooks);
 router.patch("/removeSavedBook", removeSavedBooks);
+router.get("/getLikedBooks", getLikedBooks);
 export default router;

@@ -42,13 +42,8 @@ const login = async (req, res) => {
     return res.status(401).json({ message: "Invalid Password" });
   }
 
-  const token = jwt.sign(
-    { email: req.body.email, role: user.role },
-    process.env.JWT_SECRET
-  );
-  return res
-    .status(200)
-    .json({ message: "Login successful", token, user: user, isLoggedIn: true });
+  const token = jwt.sign({ email: req.body.email, role: user.role }, process.env.JWT_SECRET);
+  return res.status(200).json({ message: "Login successful", token, user: user, isLoggedIn: true });
 };
 
 const saveBook = async (req, res) => {
@@ -62,7 +57,7 @@ const saveBook = async (req, res) => {
       },
       {
         $push: { savedBooks: bookId },
-      }
+      },
     );
 
     return res.status(201).json({ message: "Book saved" });
@@ -73,16 +68,13 @@ const getSavedBooks = async (req, res) => {
   try {
     const { userId, all } = req.query;
     if (all === "yes") {
-      const savedBooks = await User.findOne(
-        { _id: userId },
-        { savedBooks: 1 }
-      ).populate("savedBooks");
+      const savedBooks = await User.findOne({ _id: userId }, { savedBooks: 1 }).populate("savedBooks");
       res.json(savedBooks);
     }
 
     if (all === "no") {
-      const book = await User.findOne({ _id: userId });
-      const savedBooks = book.savedBooks;
+      const user = await User.findOne({ _id: userId });
+      const savedBooks = user.savedBooks;
       res.json(savedBooks);
     }
   } catch (err) {
@@ -97,20 +89,36 @@ const removeSavedBooks = async (req, res) => {
     const user = await User.findOne({ _id: userId });
 
     if (!user.savedBooks.includes(bookId)) {
-    return res.json({ message: "Book of that id not saved" });
+      return res.json({ message: "Book of that id not saved" });
     }
-    
-    const newSavedBooks = user.savedBooks.filter(
-      (book) => book.toString() !== bookId
-    );
+
+    const newSavedBooks = user.savedBooks.filter((book) => book.toString() !== bookId);
     user.savedBooks = newSavedBooks;
     user.save();
     return res.json({ message: " Cancel Save" });
-
   } catch (err) {
     console.error("Error fetching reserved books:", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 };
 
-export { getAllUsers, register, login, saveBook, getSavedBooks ,removeSavedBooks};
+const getLikedBooks = async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (all === "yes") {
+      const LikedBooks = await User.findOne({ _id: userId }, { LikedBooks: 1 }).populate("LikedBooks");
+      res.json(LikedBooks);
+    }
+
+    if (all === "no") {
+      const user = await User.findOne({ _id: userId });
+      const LikedBooks = user.LikedBooks;
+      res.json(LikedBooks);
+    }
+  } catch (err) {
+    console.error("Error fetching reserved books:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { getAllUsers, register, login, saveBook, getSavedBooks, removeSavedBooks, getLikedBooks };

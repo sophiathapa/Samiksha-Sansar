@@ -2,16 +2,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2Icon, Loader2, Lock, Mail, User } from "lucide-react";
+import { Loader2, Lock, Mail, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
-import Header1 from "@/components/header1";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { AlertMessage } from "@/components/Alert/AlertMessage";
 
 const Singin = () => {
   const router = useRouter();

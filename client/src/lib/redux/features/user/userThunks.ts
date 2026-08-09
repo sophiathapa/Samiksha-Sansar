@@ -6,7 +6,7 @@ const fetchLikedBooks = createAsyncThunk(
   "user/fetchLikedBooks",
   async (userId:string) => {
     const { data } = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_URL}/userlikedbooks?userId=${userId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/getLikedBooks?userId=${userId}&all=no`
     );
     return data; // array of bookIds
   }
