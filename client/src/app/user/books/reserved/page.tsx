@@ -8,50 +8,50 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-const Borrowed = () => {
+const Reserved = () => {
   const user = useSelector((state: RootState) => state.user);
   const { id: userId } = user;
-  const [borrowedBooks, setBorrowedBooks] = useState([]);
+  const [reservedBooks, setReservedBooks] = useState([]);
   const [selectBook, setSelectBook] = useState(null);
-  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchBorrowedBooks = async () => {
+  const fetchReservedBooks = async () => {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/getBorrowedBooks?userId=${userId}&all=yes`
+        `${process.env.NEXT_PUBLIC_API_URL}/getReservedBooks?userId=${userId}&all=yes`
       );
-      setBorrowedBooks(data);
+      setReservedBooks(data);
     } catch(error) {
-      console.log(error);
+        console.log(error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBorrowedBooks();
+    fetchReservedBooks();
   }, []);
 
   return (
       <div className="flex flex-col gap-10">
-         <div className="text-2xl md:text-2xl font-bold tracking-tight">
-          Borrowed Books
+        <div className="text-2xl md:text-2xl font-bold tracking-tight">
+          Reserved Books
         </div>
         <div>
-          {borrowedBooks?.length === 0 && !loading ? (
-            <div className="flex justify-center mt-30 text-base">No Borrowed Books</div>
+          {reservedBooks?.length === 0 && !loading  ? (
+            <div className="flex justify-center mt-30 text-base">No Reserved Books</div>
           ) : (
             <>
               {!selectBook && (
-                <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-3">
-                  {borrowedBooks.map((book:Book, id:number) => (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-3">
+                  {reservedBooks.map((book:Book, id) => (
                     <BookCard
                       key={id}
                       book={book}
                       onClick={() => {
-                        router.push(`/user/books/${book?._id}`)
+                        router.push(`/user/books/${book?._id}`);
                       }}
                     />
                   ))}
@@ -61,10 +61,10 @@ const Borrowed = () => {
           )}
 
           {loading && <SkeletonDemo />}
-          
+
         </div>
       </div>
   );
 };
 
-export default Borrowed;
+export default Reserved;

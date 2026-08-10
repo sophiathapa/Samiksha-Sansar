@@ -16,7 +16,7 @@ interface BooksGridWithPaginationProps {
   onBookSelect: (book: Book)=> void;
 }
 
-const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPaginationProps) => {
+const BooksGridWithPagination = ({ query , onBookSelect}: BooksGridWithPaginationProps) => {
   const [page, setPage] = useState<number>(1);
   const [books, setBooks] = useState([]);
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -41,8 +41,8 @@ const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPagination
 
 
   return (
-    <>
-      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-15 py-10">
+    <div className="flex min-h-screen flex-col">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-15 py-10">
         {books.map((b, i) => (
           <BookCard
             key={i}
@@ -54,7 +54,7 @@ const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPagination
         ))}
       </div>
       { books.length > 0 && (
-        <Pagination className="mt-10">
+        <Pagination className="mt-auto">
           <PaginationContent>
             {currentPage !== 1 && (
               <>
@@ -125,7 +125,7 @@ const BooksGridWithPagination = ({ query ,onBookSelect}: BooksGridWithPagination
         </Pagination>
         )
       }
-    </>
+    </div>
   );
 };
 

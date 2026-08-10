@@ -59,6 +59,14 @@ const Singin = () => {
 
   return (
     <>
+      <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Join Us
+          </h1>
+          <p className="text-muted-foreground text-center">
+            Create an account to continue your reading journey
+          </p>
+      </div>
       <Card className="shadow-xl">
         <CardHeader>
           <CardTitle className="text-center text-2xl font-bold">Create Account</CardTitle>

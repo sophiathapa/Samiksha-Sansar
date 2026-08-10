@@ -190,9 +190,9 @@ const Navbar = () => {
     
   return (
     <>
-      <nav className="relative z-30 top-0 w-full border-b bg-background/80 shadow-sm flex h-20 items-center justify-between px-5 md:px-15 py-6">
+      <nav className="relative z-30 top-0 w-full border-b bg-background/80 shadow-sm flex h-20 items-center justify-between px-4 md:px-15 py-6">
         <a href="/user/home" className="flex items-center">
-          <img className=" w-25 h-25 md:w-30 md:h-30" src="/logo.png" alt="Book Club Logo" />
+          <img className="w-13 h-10 md:w-18 md:h-13" src="/logo.png" alt="Book Club Logo" />
         </a>
 
         <div className="relative w-40 sm:w-80 md:w-120">
@@ -300,12 +300,12 @@ const Navbar = () => {
                   Borrowed Books
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/reserved")}>
+                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/books/reserved")}>
                   <BookOpen className="w-4 h-4 text-gray-600" />
                   Reserved Books
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/saved-books")}>
+                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/books/saved-books")}>
                   <Bookmark className="w-4 h-4 text-gray-600" />
                   Saved Books
                 </DropdownMenuItem>
