@@ -181,8 +181,11 @@ const Navbar = () => {
             router.push(`/user/books/${notification?.bookId}`);
             break;
           case "comment-reply":
-            router.push(`/user/books/${notification?.bookId}`);
+            router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
             break;
+          case "comment-like":
+            router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
+            break; 
           default:
             console.warn("Unhandled notification type:", notification.type);
         }

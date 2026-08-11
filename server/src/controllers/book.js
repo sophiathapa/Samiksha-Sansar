@@ -266,11 +266,28 @@ const removeReservedBook = async (req, res) => {
   try {
     const { userId, bookId } = req.body;
     const book = await Book.findOne({ _id: bookId });
-
+    if (!book) {
+      return res.status(401).json({ message: "book not found" });
+    }
     if (book.reservedBy.includes(userId)) {
       const newReservedBy = book.reservedBy.filter((user) => user.toString() !== userId);
       book.reservedBy = newReservedBy;
-      book.save();
+      await book.save();
+    }
+    const reservedUser = book?.reservedBy[0];
+
+    if (book?.reservedBy!== null && !book?.borrowerId) {
+      const notification = await createNotification({
+        recipient: reservedUser,
+        sender: userId,
+        type: "book-available",
+        bookId,
+        message: `${book?.title} book is now available to borrow.`,
+        read: false,
+      });
+
+      // 2. push in real-time IF they're connected
+      io.to(`user:${reservedUser}`).emit("notification", notification);
     }
 
     return res.json({ message: "cancel reserve" });

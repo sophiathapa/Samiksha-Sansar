@@ -16,12 +16,8 @@ import { CommentThread } from "./ CommentThread";
 
 interface BookProps {
   book: Book;
+  commentId: string;
   onBack: () => void;
-}
-
-interface ButtonAction {
-  primary: string;
-  secondary?: string;
 }
 
 const statusStyles: Record<string, string> = {
@@ -29,7 +25,7 @@ const statusStyles: Record<string, string> = {
   unavailable: "bg-red-100 text-red-800 border-red-200",
 };
 
-const BookDetailCard = ({ book, onBack }: BookProps) => {
+const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   const user = useSelector((state: RootState) => state.user);
   const [comment, setComment] = useState("");
   const { likedBooks, borrowedBooks, id: userId, reservedBooks, savedBooks } = user;
@@ -46,6 +42,8 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
     username: string;
   } | null>(null);
   const parentComments = reviews.filter((review: Review) => !review.parentId);
+  const commentRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const [selectedCommentId, setSelectedCommentId] = useState<string>("");
 
   const handleLike = async (bookId: string) => {
     try {
@@ -120,6 +118,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
         toast.success("Review added", { position: "top-right" });
       }
       setComment("");
+      setReplyTo(null);
       getComments();
     } catch (error: any) {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -191,7 +190,7 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
     getBookStatus(bookId, userId);
   };
 
-  const getButtonAction = (bookId: string, userId: string, borrowedBooks: string[], reservedBooks: string[]): ButtonAction => {
+  const getButtonAction = (bookId: string, userId: string, borrowedBooks: string[], reservedBooks: string[]) => {
     const isBorrowed = borrowedBooks.includes(bookId);
     const isReserved = reservedBooks.includes(bookId);
     const isFirstInQueue = reservedBy[0] === userId;
@@ -202,11 +201,9 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
 
     if ((status === "unavailable" || status === "available") && !isReserved) return { primary: "Reserve Book" };
 
-    if (status === "available" && isReserved && isFirstInQueue) return { primary: "Borrow Now", secondary: "Cancel Reserve" };
+    if (!isBorrowed && isReserved && isFirstInQueue) return { primary: "Borrow Now", secondary: "Cancel Reserve" };
 
-    if ((status === "unavailable" || status === "available") && isReserved) return { primary: "Cancel Reserve" };
-
-    return { primary: "Unavailable" };
+    if ((status === "unavailable" || status === "available" ||  status === "reserved") && isReserved) return { primary: "Cancel Reserve" };
   };
 
   // Computed once per render instead of twice via inline calls
@@ -241,6 +238,21 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
     }
   };
+
+  useEffect(() => {
+  if (!commentId) return;
+
+  const commentElement = commentRefs.current.get(commentId);
+
+  if (commentElement) {
+    commentElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    setSelectedCommentId(commentId);
+  }
+}, [commentId, reviews]);
 
   useEffect(() => {
     getComments();
@@ -341,9 +353,9 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
 
           <div className="flex flex-wrap justify-center px-5 py-5 gap-3">
             <Button className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
-              {buttonAction.primary}
+              {buttonAction?.primary}
             </Button>
-            {buttonAction.secondary && (
+            {buttonAction?.secondary && (
               <Button variant="secondary" className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
                 {buttonAction.secondary}
               </Button>
@@ -397,7 +409,10 @@ const BookDetailCard = ({ book, onBack }: BookProps) => {
                 <CommentThread
                   key={comment._id}
                   comment={comment}
+                  getComments={getComments}
                   allComments={reviews}
+                  commentRefs={commentRefs}
+                  selectedCommentId={selectedCommentId}
                   onReply={(id, username) => {
                     setReplyTo({ id, username });
                     setComment(`@${username} `);

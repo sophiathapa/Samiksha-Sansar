@@ -2,7 +2,7 @@
 import BookDetailCard from "@/components/BookDetailCard";
 import { Book } from "@/types/book";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -12,6 +12,8 @@ export default  function BookDetails () {
   const { id } = useParams<{ id: string }>();
   const [selectBook, setSelectBook] = useState<Book|null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const commentId: string = searchParams.get("commentId") || "";
 
   const fetchBookById = async ()=>{
     try {
@@ -31,6 +33,7 @@ export default  function BookDetails () {
     <div>
       <BookDetailCard
         book={selectBook}
+        commentId={commentId}
         onBack={() => {
           setSelectBook(null);
           router.back()

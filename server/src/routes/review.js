@@ -1,5 +1,5 @@
 import express from "express";
-import { addReview, getReviews, likeBook, likeComment, replyComment, unlikeBook, unlikeComment } from "../controllers/review.js";
+import { addReview, deleteReview, getReviews, likeBook, likeComment, replyComment, reportComment, unlikeBook } from "../controllers/review.js";
 
 const router = express.Router();
 
@@ -9,5 +9,6 @@ router.patch("/like", likeBook);
 router.patch("/unlike", unlikeBook);
 router.post("/replyComment", replyComment);
 router.patch("/likeComment", likeComment);
-router.patch("/unlikeComment", unlikeComment);
+router.delete("/deleteComment", deleteReview);
+router.get("/reportComment", reportComment);
 export default router;

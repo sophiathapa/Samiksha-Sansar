@@ -1,10 +1,13 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RootState } from "@/lib/redux/store";
 import { timeDisplay } from "@/utils/time";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import axios from "axios";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
+import { DropdownMenuGroup } from "./ui/dropdown-menu";
+import { toast } from "sonner";
 
 export type Review = {
   _id: string;
@@ -24,14 +27,18 @@ export type Review = {
 
 interface CommentProps {
   review: Review;
+  commentRef: (element: HTMLDivElement | null) => void;
+  selectedCommentId: string;
+  getComments: () => void;
   onReply: (id: string, username: string) => void;
 }
 
-export const Comment = ({ review, onReply }: CommentProps) => {
-  const user = useSelector((state: RootState) => state.user);
+export const Comment = ({ review, commentRef, selectedCommentId, getComments, onReply }: CommentProps) => {
+  const user = useSelector((state: RootState) => state?.user);
   const { id: userId } = user;
   const [likeCount, setLikeCount] = useState<number>(review?.totalLikes);
   const [likedBy, setLikedBy] = useState<string[]>(review?.likedBy);
+  const userComment: boolean = userId === review?.userId?._id;
 
   const handleCommentLike = async () => {
     try {
@@ -46,8 +53,36 @@ export const Comment = ({ review, onReply }: CommentProps) => {
     }
   };
 
+  const handleCommentDelete = async () => {
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/deleteComment?commentId=${review?._id}&userId=${userId}`);
+      getComments();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+    const handleCommentReport = async () => {
+    try {
+
+      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/reportComment?commentId=${review?._id}&userId=${userId}`);
+      toast.success(data.message, { position: "top-right" });
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const hanndleAction = () => {
+    if (userComment) {
+      handleCommentDelete();
+    } else {
+      handleCommentReport();
+    }
+  }
+
   return (
-    <div className="group bg-comment border border-comment-border rounded-lg p-4 hover:bg-comment-hover transition-colors duration-200">
+    <div className={`group bg-comment border ${selectedCommentId === review._id && "border-ring ring-ring/50 ring-[3px]"} rounded-md p-4 hover:bg-comment-hover transition-colors duration-200`} ref={commentRef}>
       <div className="flex items-start space-x-3">
         <Avatar className="h-10 w-10 ring-2 ring-primary/10">
           <AvatarImage alt={`${review?.userId?.firstName}'s avatar`} />
@@ -61,9 +96,22 @@ export const Comment = ({ review, onReply }: CommentProps) => {
               <span className="ml-2">{review.comment}</span>
             </div>
 
-            <button className="hover:scale-100 transition-transform duration-200 h-8 w-8 p-0 ">
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <MoreHorizontal className="h-4 w-4 hover:scale-120 transition-transform duration-200" />
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent className="w-20 sm:w-40 text-xs sm:text-sm bg-secondary mt-1 shadow-lg border border-gray-200 rounded-lg z-50" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="flex justify-center hover:bg-card/50 rounded-md p-2"
+                  onClick={hanndleAction}>{userComment? "Delete" : "Report"}</DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="my-1 border-black" />
+
+                  <DropdownMenuItem className="flex justify-center hover:bg-card/50 rounded-md p-2">Cancel</DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="flex items-center space-x-4">
