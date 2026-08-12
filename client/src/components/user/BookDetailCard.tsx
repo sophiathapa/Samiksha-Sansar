@@ -1,12 +1,12 @@
 import { ArrowLeft, Bookmark, Building, Calendar, Globe, Star, Heart, User, MessageCircle, Loader2 } from "lucide-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { Separator } from "./ui/separator";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Separator } from "../ui/separator";
+import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
 import { addBorrowedBook, addLikedBook, addReserveBook, addSavedBook, removeBorrowedBook, removeLikedBook, removeReservedBook, removeSavedBook } from "@/lib/redux/features/user/userSlice";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "../ui/textarea";
 import { Review } from "./Comments";
 import { RootState } from "@/lib/redux/store";
 import { toast } from "sonner";
@@ -28,14 +28,15 @@ const statusStyles: Record<string, string> = {
 const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   const user = useSelector((state: RootState) => state.user);
   const [comment, setComment] = useState("");
-  const { likedBooks, borrowedBooks, id: userId, reservedBooks, savedBooks } = user;
+  const { likedBooks, id: userId, savedBooks, reservedBooks, borrowedBooks } = user;
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false);
   const [totalLikes, setTotalLikes] = useState(book?.totalLikes || 0);
   const [status, setStatus] = useState(book?.status || "");
   const dispatch = useDispatch();
-  const [reservedBy, setReservedBy] = useState<string[]>([]);
+  const [reservedBy, setReservedBy] = useState<string[]>(book?.reservedBy);
+  // const [borrowedId, setBorrowed] = useState<string>(book?.borrowerId);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [replyTo, setReplyTo] = useState<{
     id: string;
@@ -193,11 +194,11 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
     if (isBorrowed) return { primary: "Return Book" };
 
-    if (status === "available" && !isReserved && reservedBy.length === 0) return { primary: "Borrow Book" };
+    if (status === "available" && !isReserved && reservedBy.length === 0 ) return { primary: "Borrow Book" };
 
     if ((status === "unavailable" || status === "available") && !isReserved) return { primary: "Reserve Book" };
 
-    if (!isBorrowed && isReserved && isFirstInQueue) return { primary: "Borrow Now", secondary: "Cancel Reserve" };
+    if (!isBorrowed && !book?.borrowerId && isReserved && isFirstInQueue && status === "reserved") return { primary: "Borrow Now", secondary: "Cancel Reserve" };
 
     if ((status === "unavailable" || status === "available" || status === "reserved") && isReserved) return { primary: "Cancel Reserve" };
   };

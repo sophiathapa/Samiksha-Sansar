@@ -11,7 +11,6 @@ export interface UserState {
   name: string;
   role: string;
   email: string;
-  token: string;
   likedBooks: string[];
   borrowedBooks: string[];
   reservedBooks: string[];
@@ -23,7 +22,6 @@ const initialState: UserState = {
   name: "",
   role: "",
   email: "",
-  token: "",
   likedBooks: [],
   borrowedBooks: [],
   reservedBooks: [],
@@ -39,8 +37,13 @@ export const userSlice = createSlice({
       state.name = action.payload.name;
       state.role = action.payload.role;
       state.email = action.payload.email;
-      state.token = action.payload.token;
+      state.likedBooks = action.payload.likedBooks ?? [];
+      state.savedBooks = action.payload.savedBooks ?? [];
+      state.borrowedBooks = action.payload.borrowedBooks ?? [];
+      state.reservedBooks = action.payload.reservedBooks ?? [];
     },
+
+    clearUser: () => initialState,
 
     addLikedBook: (state, action) => {
       if (!state.likedBooks.includes(action.payload)) {
@@ -103,6 +106,7 @@ export const userSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const {
   setUser,
+  clearUser,
   addLikedBook,
   removeLikedBook,
   addBorrowedBook,

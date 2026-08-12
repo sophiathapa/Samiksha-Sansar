@@ -22,11 +22,11 @@ import {
   getBookById
 } from "../controllers/book.js";
 import upload from "../middleware/multer.js";
-import { protect } from "../middleware/auth.js";
+import { protect, restrictTo } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.post("/book", upload.single("coverImg"), addBook);
+router.post("/book",protect,  restrictTo("admin"), upload.single("coverImg"), addBook);
 router.get("/books", protect, getAllBook);
 router.get("/getBookById/:id", protect, getBookById)
 router.get("/allBooks", protect, fetchBookWithoutPagination);
@@ -35,9 +35,9 @@ router.get("/popularBooks", getPopularBook);
 router.get("/featuredbooks", getFeaturedBook);
 router.get("/books/search", protect, searchBook);
 router.get("/books/genre", protect, getBookByGenre);
-router.delete("/book", protect, deleteBook);
+router.delete("/book", protect, restrictTo("admin"), deleteBook);
 router.get("/getImageName", getImageName);
-router.put("/book/edit", protect, upload.single("coverImg"), editBook);
+router.put("/book/edit", protect, restrictTo("admin"), upload.single("coverImg"), editBook);
 router.patch("/borrowBook", protect, borrowBook);
 router.patch("/reserveBook", protect, reserveBook);
 router.get("/getBorrowedBooks", protect, getBorrowedBook);

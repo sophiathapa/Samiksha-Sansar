@@ -1,7 +1,7 @@
 import React from "react";
 import styles from "../style.module.css";
 import { Toaster } from "sonner";
-import Header1 from "@/components/header1";
+import Header1 from "@/components/homePage/header1";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (

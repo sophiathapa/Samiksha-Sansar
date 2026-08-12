@@ -22,7 +22,7 @@ export interface Book {
   language: string;
   coverImg: string ;
   status: string;
-  borrowerId: {};
+  borrowerId: string;
   reservedBy: string[];
   totalLikes: number;
 }

@@ -72,7 +72,7 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button size="icon" variant="secondary" className="rounded-full bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60" onClick={() => handleSaveBook(book._id, userId)} aria-label={`Bookmark ${book.title}`}>
-              <Bookmark className={`w-4 h-4 ${savedBooks.includes(book._id) ? " text-red-700 fill-red-700" : "text-red-700 "}`} />
+              <Bookmark className={`w-4 h-4 ${savedBooks?.includes(book._id) ? " text-red-700 fill-red-700" : "text-red-700 "}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Save</TooltipContent>

@@ -1,5 +1,5 @@
 "use client";
-import { SkeletonDemo } from "@/components/Skeleton";
+import { SkeletonDemo } from "@/components/user/Skeleton";
 import BookCard from "@/components/user/BookCard";
 import api from "@/lib/axios";
 import { RootState } from "@/lib/redux/store";

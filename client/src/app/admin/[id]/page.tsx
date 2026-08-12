@@ -1,5 +1,5 @@
 "use client";
-import BookDetailCard from "@/components/BookDetailCard";
+import BookDetailCard from "@/components/user/BookDetailCard";
 import api from "@/lib/axios";
 import { Book } from "@/types/book";
 import { useParams } from "next/navigation";

@@ -9,19 +9,22 @@ interface CommentThreadProps {
   onReply: (id: string, username: string) => void;
 }
 
-export const CommentThread = ({ comment, allComments, commentRefs, selectedCommentId, getComments,  onReply }: CommentThreadProps) => {
+export const CommentThread = ({ comment, allComments, commentRefs, selectedCommentId, getComments, onReply }: CommentThreadProps) => {
   const replies = allComments.filter((item) => item.parentId === comment._id);
 
   return (
     <div>
-      <Comment review={comment} commentRef={(element) => {
+      <Comment
+        review={comment}
+        commentRef={(element) => {
           if (element) {
             commentRefs.current.set(comment._id, element);
           }
         }}
         selectedCommentId={selectedCommentId}
         getComments={getComments}
-        onReply={onReply} />
+        onReply={onReply}
+      />
 
       {replies.length > 0 && (
         <div className="ml-10 mt-2 border-l pl-4 space-y-3">

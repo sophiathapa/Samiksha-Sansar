@@ -4,14 +4,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Bookmark, BookOpen, BookOpenCheck, CircleX, Loader2, LogOut, Search, Settings, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { persistor, RootState } from "@/lib/redux/store";
+import { RootState } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Book, Notification } from "@/types/book";
 import { useSocket } from "@/hooks/useSocket";
 import { toast } from "sonner";
 import { timeDisplay } from "@/utils/time";
 import api from "@/lib/axios";
+import { clearUser } from "@/lib/redux/features/user/userSlice";
 
 const SEARCH_DEBOUNCE_MS = 500;
 const MAX_BADGE_COUNT = 9;
@@ -30,11 +31,19 @@ const Navbar = () => {
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const isDropdownOpen = Boolean(search);
+  const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    persistor.purge();
-    router.push("/");
+  const handleLogout = async() => {
+    try {
+      await api.post("/logout");
+
+    } catch(error) {
+      console.log(error);
+
+    } finally {
+      dispatch(clearUser());
+      router.push("/");
+    }
   };
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

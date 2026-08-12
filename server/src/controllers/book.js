@@ -273,17 +273,16 @@ const removeReservedBook = async (req, res) => {
     if (!book) {
       return res.status(401).json({ message: "book not found" });
     }
-    if (book.reservedBy.includes(userId)) {
+    if (book?.reservedBy.includes(userId)) {
       const newReservedBy = book.reservedBy.filter((user) => user.toString() !== userId);
       console.log(newReservedBy)
       book.reservedBy = newReservedBy;
       await book.save();
     }
-    const reservedUser = book?.reservedBy[0];
 
-    if (book?.reservedBy !== null && !book?.borrowerId) {
+    if (book?.reservedBy.length > 0 && !book?.borrowerId) {
       const notification = await createNotification({
-        recipient: reservedUser,
+        recipient: book?.reservedBy[0],
         sender: userId,
         type: "book-available",
         bookId,
@@ -314,7 +313,7 @@ const getUserBookStatus = async (req, res) => {
     if (book.reservedBy?.includes(userId)) {
       return res.json({ status: "reserved" });
     }
-    if (!book.borrowerId) {
+    if (!book.borrowerId && book.reservedBy.length === 0) {
       return res.json({ status: "available" });
     }
 

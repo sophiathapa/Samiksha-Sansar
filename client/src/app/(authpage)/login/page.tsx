@@ -31,11 +31,10 @@ const Login = () => {
     try {
       setLoading(true);
       const { data } = await api.post(`/login`, values);
-      const { _id, firstName, email, role } = data.user;
-      const { token } = data;
+      const { _id, firstName, email, role, likedBooks, savedBooks } = data.user;
       if (data?.isLoggedIn) {
         router.push("/user/home");
-        dispatch(setUser({ name: firstName, id: _id, role: role, email: email, token: token }));
+        dispatch(setUser({ name: firstName, id: _id, role, email, likedBooks, savedBooks }));
       }
     } catch (error: any) {
       setLoading(false);

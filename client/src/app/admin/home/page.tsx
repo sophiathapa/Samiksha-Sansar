@@ -1,5 +1,5 @@
 "use client";
-import BookDetailCard from "@/components/BookDetailCard";
+import BookDetailCard from "@/components/user/BookDetailCard";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";

@@ -5,7 +5,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { DropdownMenuGroup } from "./ui/dropdown-menu";
+import { DropdownMenuGroup } from "../ui/dropdown-menu";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 

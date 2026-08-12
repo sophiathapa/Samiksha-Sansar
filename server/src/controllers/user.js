@@ -55,6 +55,28 @@ const login = async (req, res) => {
   return res.status(200).json({ message: "Login successful", user: userWithoutPassword, isLoggedIn: true });
 };
 
+const getMe = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "not found"});
+    } else {
+      return res.status(200).json({ user: req.user });
+    }
+  } catch(error) {
+    console.log(error);
+      return res.status(500).json({message: "Internal Server Error" });
+  }
+};
+ 
+const logout = async (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  return res.status(200).json({ message: "Logged out" });
+};
+
 const saveBook = async (req, res) => {
   const { bookId } = req.body;
   const userId = req.user?._id.toString();
@@ -134,4 +156,4 @@ const getLikedBooks = async (req, res) => {
   }
 };
 
-export { getAllUsers, register, login, saveBook, getSavedBooks, removeSavedBooks, getLikedBooks };
+export { getAllUsers, register, login, getMe, logout, saveBook, getSavedBooks, removeSavedBooks, getLikedBooks };
