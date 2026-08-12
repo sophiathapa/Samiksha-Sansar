@@ -9,18 +9,30 @@ import notificationRoutes from "./routes/notifications.js";
 import cors from "cors";
 import http from "http";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
+
+dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
-app.use(cors());
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
+
 app.use(express.json());
+app.use(cookieParser());
+
 connect();
-dotenv.config();
+
 const PORT = process.env.PORT || 8000;
 
 export const io = new Server(server, {
   cors: {
-    origin: process.env.NEXT_PUBLIC_API_URL,
+    origin: process.env.CLIENT_URL,
     credentials: true,
   },
 });
@@ -41,7 +53,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", ({ roomId, message }) => {
-    io.to(roomId).emit("newMessage", message); // broadcast to room
+    io.to(roomId).emit("newMessage", message);
   });
 
   socket.on("disconnect", () => {

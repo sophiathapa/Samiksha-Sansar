@@ -9,6 +9,7 @@ import axios from "axios";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
+import api from "@/lib/axios";
 
 const Singin = () => {
   const router = useRouter();
@@ -28,7 +29,7 @@ const Singin = () => {
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true);
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/register`, values);
+      const { data } = await api.post(`/register`, values);
       if (data.isRegisteredIn) {
         router.push("/login");
       }
@@ -37,7 +38,7 @@ const Singin = () => {
       setRegistrationStatus({
         success: false,
         message: error?.response?.data?.message || "Registration failed",
-      });  
+      });
     }
   };
 
@@ -56,16 +57,11 @@ const Singin = () => {
     },
   });
 
-
   return (
     <>
       <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Join Us
-          </h1>
-          <p className="text-muted-foreground text-center">
-            Create an account to continue your reading journey
-          </p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Join Us</h1>
+        <p className="text-muted-foreground text-center">Create an account to continue your reading journey</p>
       </div>
       <Card className="shadow-xl">
         <CardHeader>

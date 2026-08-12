@@ -3,10 +3,10 @@ import CategoryFilter from "@/components/user/CategoryFilter";
 import BookCard from "@/components/user/BookCard";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import { Book } from "@/types/book";
+import api from "@/lib/axios";
 
 const UserPage = () => {
   const [newBooks, setNewBooks] = useState([]);
@@ -19,12 +19,12 @@ const UserPage = () => {
   };
 
   const fetchNewBook = async () => {
-    const fetchedNewBooks = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/newBooks`);
+    const fetchedNewBooks = await api.get(`/newBooks`);
     setNewBooks(fetchedNewBooks.data);
   };
 
   const fetchPopularBook = async () => {
-    const popularBooks = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/popularBooks`);
+    const popularBooks = await api.get(`/popularBooks`);
     setPopularBooks(popularBooks.data.books);
   };
 
@@ -41,28 +41,15 @@ const UserPage = () => {
         {genre === "" ? (
           <>
             {/* Popular Bestsellers */}
-            <section
-              className="mt-10"
-              aria-labelledby="popular-heading"
-            >
+            <section className="mt-10" aria-labelledby="popular-heading">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <div className="lg:col-span-4">
-                  <h1
-                    id="popular-heading"
-                    className="text-2xl md:text-3xl font-bold tracking-tight"
-                  >
+                  <h1 id="popular-heading" className="text-2xl md:text-3xl font-bold tracking-tight">
                     Popular Bestsellers
                   </h1>
-                  <p className="mt-2 text-muted-foreground">
-                    We picked up the most popular books for you, based on
-                    your taste. Check it.
-                  </p>
+                  <p className="mt-2 text-muted-foreground">We picked up the most popular books for you, based on your taste. Check it.</p>
                   <div className="mt-4">
-                    <Button
-                      onClick={() => router.push("books/popular")}
-                    >
-                      View full list
-                    </Button>
+                    <Button onClick={() => router.push("books/popular")}>View full list</Button>
                   </div>
                 </div>
                 <div className="lg:col-span-8">
@@ -85,35 +72,27 @@ const UserPage = () => {
             </section>
 
             {/* Can be interesting */}
-            <section
-              className="mt-10 w-full"
-              aria-labelledby="interesting-heading"
-            >
-              <h2
-                id="interesting-heading"
-                className="text-xl md:text-2xl font-bold tracking-tight"
-              >
+            <section className="mt-10 w-full" aria-labelledby="interesting-heading">
+              <h2 id="interesting-heading" className="text-xl md:text-2xl font-bold tracking-tight">
                 New Arrivals
               </h2>
-              <p className="mt-2 text-muted-foreground">
-                Explore Fresh Arrivals and Find Your Next Great Read.
-              </p>
+              <p className="mt-2 text-muted-foreground">Explore Fresh Arrivals and Find Your Next Great Read.</p>
 
-                <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
-                  {newBooks.map((b, i) => (
-                    <BookCard
-                      key={i}
-                      book={b}
-                      onClick={() => {
-                        handleSelectBook(b);
-                      }}
-                    />
-                  ))}
-                </div>
+              <div className="flex items-start gap-4 md:gap-6 overflow-x-auto">
+                {newBooks.map((b, i) => (
+                  <BookCard
+                    key={i}
+                    book={b}
+                    onClick={() => {
+                      handleSelectBook(b);
+                    }}
+                  />
+                ))}
+              </div>
             </section>
           </>
         ) : genre === "All" ? (
-          <BooksGridWithPagination query="books?" onBookSelect={handleSelectBook}  />
+          <BooksGridWithPagination query="books?" onBookSelect={handleSelectBook} />
         ) : (
           <BooksGridWithPagination query={`books/genre?genre=${genre}&`} onBookSelect={handleSelectBook} />
         )}

@@ -3,194 +3,177 @@ import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Bell, Bookmark, BookOpen, BookOpenCheck, CircleX, Loader2, LogOut, Search, Settings, User } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { persistor, RootState } from "@/lib/redux/store";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import { useSelector } from "react-redux";
 import { Book, Notification } from "@/types/book";
 import { useSocket } from "@/hooks/useSocket";
 import { toast } from "sonner";
 import { timeDisplay } from "@/utils/time";
+import api from "@/lib/axios";
 
 const SEARCH_DEBOUNCE_MS = 500;
 const MAX_BADGE_COUNT = 9;
 
 const Navbar = () => {
-      const user = useSelector((state: RootState) => state.user);
-      const { name: userName, id: userId } = user;
-      const [search, setSearch] = useState("");
-      const [searchBooks, setSearchBooks] = useState<Book[] | null>(null);
-      const [isSearching, setIsSearching] = useState(false);
-      const abortControllerRef = useRef<AbortController | null>(null);
-      const router = useRouter();
-      const socket = useSocket();
-      const [notifications, setNotifications] = useState<Notification[]>([]);
-      const [unreadCount, setUnreadCount] = useState(0);
-      const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
-      const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const isDropdownOpen = Boolean(search);
-    
-      const handleLogout = () => {
-        persistor.purge();
-        router.push("/");
-      };
-    
-      const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearch(e.target.value);
-      }, []);
-    
-      const clearSearch = useCallback(() => {
-        setSearch("");
-        setSearchBooks(null);
-        abortControllerRef.current?.abort();
-      }, []);
-    
-      useEffect(() => {
-        const trimmed = search.trim();
-    
-        if (!trimmed) {
-          setSearchBooks(null);
-          setIsSearching(false);
-          return;
-        }
-    
-        setIsSearching(true);
-    
-        const timer = setTimeout(async () => {
-          abortControllerRef.current?.abort();
-          const controller = new AbortController();
-          abortControllerRef.current = controller;
-    
-          try {
-            const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/books/search`, {
-              params: { search: trimmed },
-              signal: controller.signal,
-            });
-            setSearchBooks(data);
-          } catch (err) {
-            if (!axios.isCancel(err)) {
-              console.error("Book search failed:", err);
-              setSearchBooks([]);
-            }
-          } finally {
-            setIsSearching(false);
-          }
-        }, SEARCH_DEBOUNCE_MS);
-    
-        return () => clearTimeout(timer);
-      }, [search]);
-    
-      // --- Fetch notifications from DB on mount ---
-      const fetchNotifications = useCallback(async () => {
-        if (!userId) return;
-        setIsLoadingNotifications(true);
-        try {
-          const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/notifications`,
-            { params: {userId}},
-            );
-          // Expecting: { notifications: Notification[], unreadCount: number }
-          setNotifications(data.notifications ?? data);
-          setUnreadCount(
-            data.unreadCount ?? (data.notifications ?? data).filter((n: Notification) => !n.read).length
-          );
-        } catch (err) {
-          console.error("Failed to fetch notifications:", err);
-        } finally {
-          setIsLoadingNotifications(false);
-        }
-      }, [userId]);
-    
-      useEffect(() => {
-        fetchNotifications();
-      }, [fetchNotifications]);
-    
-      // --- Realtime notification via socket ---
-      useEffect(() => {
-        socket.emit("joinRoom", `user:${userId}`);
-        const handleNewMessage = (msg: Notification) => {
-          toast(msg.message, {
-            position: "top-right",
-          });
-          // Prepend the new notification and bump unread count
-          setNotifications((prev) => [msg, ...prev]);
-          setUnreadCount((prev) => prev + 1);
-        };
-    
-        socket.on("notification", handleNewMessage);
-    
-        return () => {
-          socket.off("notification", handleNewMessage); // remove THIS listener only
-        };
-      }, [socket, userId]);
-    
-      // --- Mark a single notification as read ---
-      const markAsRead = useCallback(async (notification: Notification) => {
-        if (notification.read) return;
-    
-        // Optimistic update
-        setNotifications((prev) =>
-          prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n))
-        );
-        setUnreadCount((prev) => Math.max(0, prev - 1));
-    
-        try {
-          await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/notifications/${notification._id}/read`,
-            {},
-          );
-        } catch (err) {
-          console.error("Failed to mark notification as read:", err);
-          // Revert on failure
-          setNotifications((prev) =>
-            prev.map((n) => (n._id === notification._id ? { ...n, read: false } : n))
-          );
-          setUnreadCount((prev) => prev + 1);
-        }
-      }, []);
-    
-      // --- Mark all as read ---
-      const markAllAsRead = useCallback(async () => {
-        if (unreadCount === 0) return;
-    
-        const previousNotifications = notifications;
-        const previousUnreadCount = unreadCount;
-    
-        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-        setUnreadCount(0);
-    
-        try {
-          await axios.patch(
-            `${process.env.NEXT_PUBLIC_API_URL}/notifications/readAll`,
-            {},
-            { params: {userId} }
-          );
-        } catch (err) {
-          console.error("Failed to mark all notifications as read:", err);
-          setNotifications(previousNotifications);
-          setUnreadCount(previousUnreadCount);
-        }
-      }, [notifications, unreadCount]);
-    
-      const handleNotificationClick = (notification: Notification) => {
-        markAsRead(notification);
-        setIsNotificationOpen(false);
-        switch (notification.type) {
-          case "book-available":
-            router.push(`/user/books/${notification?.bookId}`);
-            break;
-          case "comment-reply":
-            router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
-            break;
-          case "comment-like":
-            router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
-            break; 
-          default:
-            console.warn("Unhandled notification type:", notification.type);
-        }
-      };
-    
+  const user = useSelector((state: RootState) => state.user);
+  const { name: userName, id: userId } = user;
+  const [search, setSearch] = useState("");
+  const [searchBooks, setSearchBooks] = useState<Book[] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const router = useRouter();
+  const socket = useSocket();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const isDropdownOpen = Boolean(search);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    persistor.purge();
+    router.push("/");
+  };
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+  }, []);
+
+  const clearSearch = useCallback(() => {
+    setSearch("");
+    setSearchBooks(null);
+    abortControllerRef.current?.abort();
+  }, []);
+
+  useEffect(() => {
+    const trimmed = search.trim();
+
+    if (!trimmed) {
+      setSearchBooks(null);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+
+    const timer = setTimeout(async () => {
+      abortControllerRef.current?.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const { data } = await api.get(`/books/search`, {
+          params: { search: trimmed },
+          signal: controller.signal,
+        });
+        setSearchBooks(data);
+      } catch (err) {
+        console.error("Book search failed:", err);
+        setSearchBooks([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // --- Fetch notifications from DB on mount ---
+  const fetchNotifications = useCallback(async () => {
+    if (!userId) return;
+    setIsLoadingNotifications(true);
+    try {
+      const { data } = await api.get(`/notifications`);
+      // Expecting: { notifications: Notification[], unreadCount: number }
+      setNotifications(data.notifications ?? data);
+      setUnreadCount(data.unreadCount ?? (data.notifications ?? data).filter((n: Notification) => !n.read).length);
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  // --- Realtime notification via socket ---
+  useEffect(() => {
+    socket.emit("joinRoom", `user:${userId}`);
+    const handleNewMessage = (msg: Notification) => {
+      toast(msg.message, {
+        position: "top-right",
+      });
+      // Prepend the new notification and bump unread count
+      setNotifications((prev) => [msg, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    socket.on("notification", handleNewMessage);
+
+    return () => {
+      socket.off("notification", handleNewMessage); // remove THIS listener only
+    };
+  }, [socket, userId]);
+
+  // --- Mark a single notification as read ---
+  const markAsRead = useCallback(async (notification: Notification) => {
+    if (notification.read) return;
+
+    // Optimistic update
+    setNotifications((prev) => prev.map((n) => (n._id === notification._id ? { ...n, read: true } : n)));
+    setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    try {
+      await api.patch(`/notifications/${notification._id}/read`, {});
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+      // Revert on failure
+      setNotifications((prev) => prev.map((n) => (n._id === notification._id ? { ...n, read: false } : n)));
+      setUnreadCount((prev) => prev + 1);
+    }
+  }, []);
+
+  // --- Mark all as read ---
+  const markAllAsRead = useCallback(async () => {
+    if (unreadCount === 0) return;
+
+    const previousNotifications = notifications;
+    const previousUnreadCount = unreadCount;
+
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setUnreadCount(0);
+
+    try {
+      await api.patch(`/notifications/readAll`);
+    } catch (err) {
+      console.error("Failed to mark all notifications as read:", err);
+      setNotifications(previousNotifications);
+      setUnreadCount(previousUnreadCount);
+    }
+  }, [notifications, unreadCount]);
+
+  const handleNotificationClick = (notification: Notification) => {
+    markAsRead(notification);
+    setIsNotificationOpen(false);
+    switch (notification.type) {
+      case "book-available":
+        router.push(`/user/books/${notification?.bookId}`);
+        break;
+      case "comment-reply":
+        router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
+        break;
+      case "comment-like":
+        router.push(`/user/books/${notification?.bookId}?commentId=${notification?.commentId}`);
+        break;
+      default:
+        console.warn("Unhandled notification type:", notification.type);
+    }
+  };
+
   return (
     <>
       <nav className="relative z-30 top-0 w-full border-b bg-background/80 shadow-sm flex h-20 items-center justify-between px-4 md:px-15 py-6">
@@ -272,7 +255,7 @@ const Navbar = () => {
                         {!notification.read && <span className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 shrink-0" />}
                         <p className={`text-sm ${notification.read ? "text-muted-foreground" : "text-foreground font-medium"}`}>{notification.message}</p>
                       </div>
-                       <span className="text-xs text-muted-foreground text-right w-full">{timeDisplay(notification?.createdAt)}</span>
+                      <span className="text-xs text-muted-foreground text-right w-full">{timeDisplay(notification?.createdAt)}</span>
                     </DropdownMenuItem>
                   ))
                 )}
@@ -293,7 +276,7 @@ const Navbar = () => {
               <DropdownMenuSeparator className="my-1 border-gray-200" />
 
               <DropdownMenuGroup>
-                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/profile")}>
                   <User className="w-4 h-4 text-gray-600" />
                   Profile
                 </DropdownMenuItem>
@@ -313,7 +296,7 @@ const Navbar = () => {
                   Saved Books
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2">
+                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/setting")}>
                   <Settings className="w-4 h-4 text-gray-600" />
                   Settings
                 </DropdownMenuItem>

@@ -5,7 +5,6 @@ import { Separator } from "./ui/separator";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
-import axios from "axios";
 import { addBorrowedBook, addLikedBook, addReserveBook, addSavedBook, removeBorrowedBook, removeLikedBook, removeReservedBook, removeSavedBook } from "@/lib/redux/features/user/userSlice";
 import { Textarea } from "./ui/textarea";
 import { Review } from "./Comments";
@@ -13,10 +12,11 @@ import { RootState } from "@/lib/redux/store";
 import { toast } from "sonner";
 import { Book } from "@/types/book";
 import { CommentThread } from "./ CommentThread";
+import api from "@/lib/axios";
 
 interface BookProps {
   book: Book;
-  commentId: string;
+  commentId?: string;
   onBack: () => void;
 }
 
@@ -49,16 +49,14 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
     try {
       if (!likedBooks?.includes(bookId)) {
         dispatch(addLikedBook(bookId));
-        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/like`, {
+        const { data } = await api.patch(`/like`, {
           bookId,
-          userId,
         });
         setTotalLikes(data.totalLikes);
       } else {
         dispatch(removeLikedBook(bookId));
-        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/unlike`, {
+        const { data } = await api.patch(`/unlike`, {
           bookId,
-          userId,
         });
         setTotalLikes(data.totalLikes);
       }
@@ -71,14 +69,14 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
     try {
       if (!savedBooks.includes(bookId)) {
         dispatch(addSavedBook(bookId));
-        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/saveBook`, {
+        const { data } = await api.patch(`/saveBook`, {
           bookId,
           userId,
         });
         toast.success(data.message, { position: "top-right" });
       } else {
         dispatch(removeSavedBook(bookId));
-        const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeSavedBook`, {
+        const { data } = await api.patch(`/removeSavedBook`, {
           bookId,
           userId,
         });
@@ -103,15 +101,13 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
           toast.warning("Enter Review", { position: "top-right" });
           return;
         }
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/replyComment`, {
-          userId,
+        const { data } = await api.post(`/replyComment`, {
           bookId: book?._id,
           parentId: replyTo?.id,
           comment: filteredComment,
         });
       } else {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/review`, {
-          userId,
+        await api.post(`/review`, {
           bookId,
           comment,
         });
@@ -133,7 +129,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
         try {
           dispatch(addBorrowedBook(bookId));
           dispatch(removeReservedBook(bookId));
-          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`, { bookId, userId });
+          const { data } = await api.patch(`/borrowBook`, { bookId, userId });
           setStatus(data);
           toast.success("Book Borrowed", { position: "top-right" });
         } catch (error: any) {
@@ -144,7 +140,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
       case "Borrow Book":
         try {
           dispatch(addBorrowedBook(bookId));
-          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/borrowBook`, { bookId, userId });
+          const { data } = await api.patch(`/borrowBook`, { bookId, userId });
           setStatus(data);
           toast.success("Book Borrowed", { position: "top-right" });
         } catch (error: any) {
@@ -155,7 +151,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
       case "Reserve Book":
         try {
           dispatch(addReserveBook(bookId));
-          await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/reserveBook`, { bookId, userId });
+          await api.patch(`/reserveBook`, { bookId, userId });
           toast.success("Book Reserved", { position: "top-right" });
         } catch (error: any) {
           toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -165,7 +161,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
       case "Return Book":
         try {
           dispatch(removeBorrowedBook(bookId));
-          const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeBorrowedBooks`, {
+          const { data } = await api.patch(`/removeBorrowedBooks`, {
             bookId,
             userId,
           });
@@ -179,7 +175,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
       case "Cancel Reserve":
         try {
           dispatch(removeReservedBook(bookId));
-          await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/removeReservedBooks`, { bookId, userId });
+          await api.patch(`/removeReservedBooks`, { bookId });
           toast.success("Reservation cancelled", { position: "top-right" });
         } catch (error: any) {
           toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -203,7 +199,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
     if (!isBorrowed && isReserved && isFirstInQueue) return { primary: "Borrow Now", secondary: "Cancel Reserve" };
 
-    if ((status === "unavailable" || status === "available" ||  status === "reserved") && isReserved) return { primary: "Cancel Reserve" };
+    if ((status === "unavailable" || status === "available" || status === "reserved") && isReserved) return { primary: "Cancel Reserve" };
   };
 
   // Computed once per render instead of twice via inline calls
@@ -212,7 +208,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   const getComments = async () => {
     setReviewsLoading(true);
     try {
-      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/reviews?bookId=${book?._id}`);
+      const { data } = await api.get(`/reviews?bookId=${book?._id}`);
       setReviews(data);
     } catch (error: any) {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -223,7 +219,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
   const getBookStatus = async (bookId: string, userId: string) => {
     try {
-      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/userBookStatus?bookId=${bookId}&userId=${userId}`);
+      const { data } = await api.get(`/userBookStatus?bookId=${bookId}`);
       setStatus(data.status);
     } catch (error: any) {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -232,7 +228,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
   const getReservedBy = async (bookId: string) => {
     try {
-      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/getReservedBy?bookId=${bookId}`);
+      const { data } = await api.get(`/getReservedBy?bookId=${bookId}`);
       setReservedBy(data);
     } catch (error: any) {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
@@ -240,19 +236,19 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   };
 
   useEffect(() => {
-  if (!commentId) return;
+    if (!commentId) return;
 
-  const commentElement = commentRefs.current.get(commentId);
+    const commentElement = commentRefs.current.get(commentId);
 
-  if (commentElement) {
-    commentElement.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
+    if (commentElement) {
+      commentElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
 
-    setSelectedCommentId(commentId);
-  }
-}, [commentId, reviews]);
+      setSelectedCommentId(commentId);
+    }
+  }, [commentId, reviews]);
 
   useEffect(() => {
     getComments();

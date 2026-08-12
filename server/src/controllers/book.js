@@ -194,7 +194,8 @@ const reserveBook = async (req, res) => {
 
 const getBorrowedBook = async (req, res) => {
   try {
-    const { userId, all } = req.query;
+    const { all } = req.query;
+    const userId = req.user?._id.toString();
     if (all === "no") {
       const books = await Book.find({ borrowerId: userId }, { _id: 1 });
       const borrowedBooks = books.map((book) => book._id.toString());
@@ -213,7 +214,8 @@ const getBorrowedBook = async (req, res) => {
 
 const getReservedBooks = async (req, res) => {
   try {
-    const { userId, all } = req.query;
+    const { all } = req.query;
+    const userId = req.user?._id.toString();
     if (all === "no") {
       const reservedBooks = await Book.find({ reservedBy: userId }, { _id: 1 }).lean();
 
@@ -264,19 +266,22 @@ const removeBorrowedId = async (req, res) => {
 
 const removeReservedBook = async (req, res) => {
   try {
-    const { userId, bookId } = req.body;
+    const { bookId } = req.body;
+    const userId = req.user?._id.toString();
+    console.log(userId)
     const book = await Book.findOne({ _id: bookId });
     if (!book) {
       return res.status(401).json({ message: "book not found" });
     }
     if (book.reservedBy.includes(userId)) {
       const newReservedBy = book.reservedBy.filter((user) => user.toString() !== userId);
+      console.log(newReservedBy)
       book.reservedBy = newReservedBy;
       await book.save();
     }
     const reservedUser = book?.reservedBy[0];
 
-    if (book?.reservedBy!== null && !book?.borrowerId) {
+    if (book?.reservedBy !== null && !book?.borrowerId) {
       const notification = await createNotification({
         recipient: reservedUser,
         sender: userId,
@@ -299,7 +304,8 @@ const removeReservedBook = async (req, res) => {
 
 const getUserBookStatus = async (req, res) => {
   try {
-    const { userId, bookId } = req.query;
+    const { bookId } = req.query;
+    const userId = req.user?._id.toString();
     const book = await Book.findOne({ _id: bookId });
     if (book.borrowerId?.toString() === userId) {
       return res.json({ status: "borrowed" });

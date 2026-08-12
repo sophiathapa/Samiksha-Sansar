@@ -1,5 +1,4 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import CategoryFilter from "@/components/user/CategoryFilter";
@@ -9,6 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import EditCard from "@/components/admin/editCard";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import { Book } from "@/types/book";
+import api from "@/lib/axios";
 
 const SEARCH_DEBOUNCE_MS = 500;
 
@@ -53,7 +53,7 @@ const Edit = () => {
       abortControllerRef.current = controller;
 
       try {
-        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/books/search`, {
+        const { data } = await api.get(`/books/search`, {
           params: { search: trimmed },
           signal: controller.signal,
         });
@@ -88,35 +88,16 @@ const Edit = () => {
         <div className="mx-auto max-w-7xl grid grid-cols-12 gap-6 px-4 py-6 md:py-8">
           <main className="relative col-span-12">
             {/* Blur overlay for everything below the search bar/dropdown */}
-            {isDropdownOpen && (
-              <div
-                className="absolute w-full h-full z-20 bg-background/60 backdrop-blur-sm transition-opacity"
-                onClick={clearSearch}
-                aria-hidden="true"
-              />
-            )}
+            {isDropdownOpen && <div className="absolute w-full h-full z-20 bg-background/60 backdrop-blur-sm transition-opacity" onClick={clearSearch} aria-hidden="true" />}
 
             {!selectBook && (
               <header className="relative z-30 flex items-center gap-4 rounded-2xl bg-card p-3 md:p-4 shadow-sm">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search name of the book or author…"
-                    className="pl-9 pr-9"
-                    aria-label="Search books"
-                    value={search}
-                    onChange={handleSearchChange}
-                  />
-                  {isSearching && (
-                    <Loader2 className="absolute right-9 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
-                  )}
+                  <Input placeholder="Search name of the book or author…" className="pl-9 pr-9" aria-label="Search books" value={search} onChange={handleSearchChange} />
+                  {isSearching && <Loader2 className="absolute right-9 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />}
                   {search && (
-                    <button
-                      type="button"
-                      onClick={clearSearch}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      aria-label="Clear search"
-                    >
+                    <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
                       <CircleX className="h-4 w-4" />
                     </button>
                   )}
@@ -130,11 +111,7 @@ const Edit = () => {
                   <div className="p-2 text-muted-foreground">Searching…</div>
                 ) : searchBooks && searchBooks.length > 0 ? (
                   searchBooks.map((book: Book) => (
-                    <div
-                      className="p-2 hover:bg-primary/50 rounded-2xl cursor-pointer"
-                      key={book._id ?? book.title}
-                      onClick={() => setSelectBook(book)}
-                    >
+                    <div className="p-2 hover:bg-primary/50 rounded-2xl cursor-pointer" key={book._id ?? book.title} onClick={() => setSelectBook(book)}>
                       <div>{book?.title}</div>
                     </div>
                   ))
@@ -149,20 +126,19 @@ const Edit = () => {
                 <div className="mt-4 md:mt-6 mb-5">
                   <CategoryFilter genre={genre} setGenre={setGenre} />
                 </div>
-                {genre === "All" ? (
-                  <BooksGridWithPagination query="books?" onBookSelect={handleSelectBook} />
-                ) : (
-                  <BooksGridWithPagination query={`books/genre?genre=${genre}&`} onBookSelect={handleSelectBook} />
-                )}
+                {genre === "All" ? <BooksGridWithPagination query="books?" onBookSelect={handleSelectBook} /> : <BooksGridWithPagination query={`books/genre?genre=${genre}&`} onBookSelect={handleSelectBook} />}
               </>
             )}
 
-            {selectBook && <EditCard book={selectBook} 
-              onback={() => {
-                setSelectBook(null)
-                setSearch("")
-              }} />
-            }
+            {selectBook && (
+              <EditCard
+                book={selectBook}
+                onback={() => {
+                  setSelectBook(null);
+                  setSearch("");
+                }}
+              />
+            )}
           </main>
         </div>
       </div>

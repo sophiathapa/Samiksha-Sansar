@@ -1,13 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, Lock, Mail } from "lucide-react";
 import Link from "next/link";
@@ -18,6 +11,7 @@ import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { setUser } from "@/lib/redux/features/user/userSlice";
+import api from "@/lib/axios";
 
 const Login = () => {
   const router = useRouter();
@@ -29,30 +23,26 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
-    email: Yup.string()
-      .email("Invalid email address")
-      .required("Email is required"),
+    email: Yup.string().email("Invalid email address").required("Email is required"),
     password: Yup.string().required("Password is required"),
   });
 
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true);
-      const { data } = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/login`, values);
+      const { data } = await api.post(`/login`, values);
       const { _id, firstName, email, role } = data.user;
-      const  {token } = data
+      const { token } = data;
       if (data?.isLoggedIn) {
         router.push("/user/home");
-        dispatch(
-          setUser({ name: firstName, id: _id, role: role, email: email, token: token })
-        );
+        dispatch(setUser({ name: firstName, id: _id, role: role, email: email, token: token }));
       }
     } catch (error: any) {
       setLoading(false);
       setLoginStatus({
         success: false,
         message: error?.response?.data?.message || "Login failed",
-      }); 
+      });
     }
   };
 
@@ -70,110 +60,52 @@ const Login = () => {
   return (
     <>
       <div className="flex  flex-col justify-center items-center mb-8 max-w-md">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Welcome Back
-        </h1>
-        <p className="text-muted-foreground text-center">
-          Sign in to continue your reading journey
-        </p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Welcome Back</h1>
+        <p className="text-muted-foreground text-center">Sign in to continue your reading journey</p>
       </div>
 
       <Card className="shadow-xl">
         <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold">
-            Sign In            
-          </CardTitle>
-          <CardDescription className="text-center">
-            Enter your credentials to access your account
-          </CardDescription>
+          <CardTitle className="text-center text-2xl font-bold">Sign In</CardTitle>
+          <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label
-                htmlFor="email"
-                className="text-foreground font-medium block"
-              >
+              <label htmlFor="email" className="text-foreground font-medium block">
                 Email Address
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formik.values.email}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
+                <Input className="pl-10" id="email" name="email" type="email" placeholder="Enter your email" value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur} />
               </div>
-              {formik.touched.email && formik.errors.email && (
-                <p className="text-destructive text-sm">
-                  {formik.errors.email}
-                </p>
-              )}
+              {formik.touched.email && formik.errors.email && <p className="text-destructive text-sm">{formik.errors.email}</p>}
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="text-foreground font-medium block"
-              >
+              <label htmlFor="password" className="text-foreground font-medium block">
                 Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  className="pl-10"
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Enter your password"
-                  value={formik.values.password}
-                  onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
-                />
+                <Input className="pl-10" id="password" name="password" type="password" placeholder="Enter your password" value={formik.values.password} onChange={formik.handleChange} onBlur={formik.handleBlur} />
               </div>
-              {formik.touched.password && formik.errors.password && (
-                <p className="text-destructive text-sm">
-                  {formik.errors.password}
-                </p>
-              )}
+              {formik.touched.password && formik.errors.password && <p className="text-destructive text-sm">{formik.errors.password}</p>}
             </div>
 
-            {loginStatus && (
-              <div
-                className={`p-3 rounded-md text-sm ${
-                  loginStatus.success
-                    ? "bg-green-50 text-green-800 border border-green-200"
-                    : "bg-red-50 text-red-800 border border-red-200"
-                }`}
-              >
-                {loginStatus.message}
-              </div>
-            )}
+            {loginStatus && <div className={`p-3 rounded-md text-sm ${loginStatus.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"}`}>{loginStatus.message}</div>}
           </form>
         </CardContent>
 
         <CardFooter className="flex flex-col space-y-4">
-          <Button
-            type="submit"
-            className="w-full"
-            onClick={formik.handleSubmit as any}
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full" onClick={formik.handleSubmit as any} disabled={loading}>
             {loading ? <Loader2 className="animate-spin h-4 w-4 text-white" /> : "Sign In"}
           </Button>
           <div className="text-center">
             <p className="text-muted-foreground">
               Don't have an account?{" "}
-              <Link
-                href="/register"
-                className="text-primary hover:text-primary/80 font-medium transition-colors"
-              >
+              <Link href="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 Create one here
               </Link>
             </p>

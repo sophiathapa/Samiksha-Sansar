@@ -2,12 +2,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RootState } from "@/lib/redux/store";
 import { timeDisplay } from "@/utils/time";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import axios from "axios";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { DropdownMenuGroup } from "./ui/dropdown-menu";
 import { toast } from "sonner";
+import api from "@/lib/axios";
 
 export type Review = {
   _id: string;
@@ -42,9 +42,8 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
 
   const handleCommentLike = async () => {
     try {
-      const { data } = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/likeComment`, {
+      const { data } = await api.patch(`/likeComment`, {
         reviewId: review?._id,
-        userId,
       });
       setLikeCount(data?.totalLikes);
       setLikedBy(data?.likedBy);
@@ -55,19 +54,17 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
 
   const handleCommentDelete = async () => {
     try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/deleteComment?commentId=${review?._id}&userId=${userId}`);
+      await api.delete(`/deleteComment?commentId=${review?._id}`);
       getComments();
     } catch (error) {
       console.log(error);
     }
   };
 
-    const handleCommentReport = async () => {
+  const handleCommentReport = async () => {
     try {
-
-      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/reportComment?commentId=${review?._id}&userId=${userId}`);
+      const { data } = await api.get(`/reportComment?commentId=${review?._id}`);
       toast.success(data.message, { position: "top-right" });
-
     } catch (error) {
       console.log(error);
     }
@@ -79,7 +76,7 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
     } else {
       handleCommentReport();
     }
-  }
+  };
 
   return (
     <div className={`group bg-comment border ${selectedCommentId === review._id && "border-ring ring-ring/50 ring-[3px]"} rounded-md p-4 hover:bg-comment-hover transition-colors duration-200`} ref={commentRef}>
@@ -103,8 +100,9 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
 
               <DropdownMenuContent className="w-20 sm:w-40 text-xs sm:text-sm bg-secondary mt-1 shadow-lg border border-gray-200 rounded-lg z-50" align="end">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="flex justify-center hover:bg-card/50 rounded-md p-2"
-                  onClick={hanndleAction}>{userComment? "Delete" : "Report"}</DropdownMenuItem>
+                  <DropdownMenuItem className="flex justify-center hover:bg-card/50 rounded-md p-2" onClick={hanndleAction}>
+                    {userComment ? "Delete" : "Report"}
+                  </DropdownMenuItem>
 
                   <DropdownMenuSeparator className="my-1 border-black" />
 

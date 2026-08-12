@@ -42,12 +42,22 @@ const login = async (req, res) => {
     return res.status(401).json({ message: "Invalid Password" });
   }
 
-  const token = jwt.sign({ email: req.body.email, role: user.role }, process.env.JWT_SECRET);
-  return res.status(200).json({ message: "Login successful", token, user: user, isLoggedIn: true });
+  const token = jwt.sign({ id: user?._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+
+  const { password: _, ...userWithoutPassword } = user.toObject();
+
+  return res.status(200).json({ message: "Login successful", user: userWithoutPassword, isLoggedIn: true });
 };
 
 const saveBook = async (req, res) => {
-  const { bookId, userId } = req.body;
+  const { bookId } = req.body;
+  const userId = req.user?._id.toString();
   const user = await User.findOne({ _id: userId });
   const book = user.savedBooks.includes(bookId);
   if (!book) {
@@ -66,7 +76,8 @@ const saveBook = async (req, res) => {
 
 const getSavedBooks = async (req, res) => {
   try {
-    const { userId, all } = req.query;
+    const { all } = req.query;
+    const userId = req.user?._id.toString();
     if (all === "yes") {
       const savedBooks = await User.findOne({ _id: userId }, { savedBooks: 1 }).populate("savedBooks");
       res.json(savedBooks);
@@ -85,7 +96,8 @@ const getSavedBooks = async (req, res) => {
 
 const removeSavedBooks = async (req, res) => {
   try {
-    const { userId, bookId } = req.body;
+    const { bookId } = req.body;
+    const userId = req.user?._id.toString();
     const user = await User.findOne({ _id: userId });
 
     if (!user.savedBooks.includes(bookId)) {
@@ -104,7 +116,8 @@ const removeSavedBooks = async (req, res) => {
 
 const getLikedBooks = async (req, res) => {
   try {
-    const { userId } = req.query;
+    const userId = req.user?._id.toString();
+
     if (all === "yes") {
       const LikedBooks = await User.findOne({ _id: userId }, { LikedBooks: 1 }).populate("LikedBooks");
       res.json(LikedBooks);

@@ -22,28 +22,29 @@ import {
   getBookById
 } from "../controllers/book.js";
 import upload from "../middleware/multer.js";
+import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
 router.post("/book", upload.single("coverImg"), addBook);
-router.get("/books", getAllBook);
-router.get("/getBookById/:id", getBookById)
-router.get("/allBooks", fetchBookWithoutPagination);
+router.get("/books", protect, getAllBook);
+router.get("/getBookById/:id", protect, getBookById)
+router.get("/allBooks", protect, fetchBookWithoutPagination);
 router.get("/newBooks", getNewBook);
 router.get("/popularBooks", getPopularBook);
 router.get("/featuredbooks", getFeaturedBook);
-router.get("/books/search", searchBook);
-router.get("/books/genre", getBookByGenre);
-router.delete("/book", deleteBook);
+router.get("/books/search", protect, searchBook);
+router.get("/books/genre", protect, getBookByGenre);
+router.delete("/book", protect, deleteBook);
 router.get("/getImageName", getImageName);
-router.put("/book/edit", upload.single("coverImg"), editBook);
-router.patch("/borrowBook", borrowBook);
-router.patch("/reserveBook", reserveBook);
-router.get("/getBorrowedBooks", getBorrowedBook);
-router.get("/getReservedBooks", getReservedBooks);
-router.patch("/removeBorrowedBooks",removeBorrowedId);
-router.patch("/removeReservedBooks", removeReservedBook);
-router.get("/userBookStatus", getUserBookStatus);
-router.get("/getReservedBy", getReservedBy);
+router.put("/book/edit", protect, upload.single("coverImg"), editBook);
+router.patch("/borrowBook", protect, borrowBook);
+router.patch("/reserveBook", protect, reserveBook);
+router.get("/getBorrowedBooks", protect, getBorrowedBook);
+router.get("/getReservedBooks", protect, getReservedBooks);
+router.patch("/removeBorrowedBooks", protect,removeBorrowedId);
+router.patch("/removeReservedBooks", protect, removeReservedBook);
+router.get("/userBookStatus", protect, getUserBookStatus);
+router.get("/getReservedBy", protect, getReservedBy);
 
 export default router;

@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
+import api from "@/lib/axios";
 
 export default function BookClubAI() {
   const [query, setQuery] = useState("");
@@ -17,10 +17,7 @@ export default function BookClubAI() {
     setAnswer("");
 
     try {
-      const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/bookAI`,
-        { query }
-      );
+      const res = await api.post(`/bookAI`, { query });
 
       const cleaned = res.data.message
         .replace(/^```json\s*/, "") // remove starting ```json
@@ -38,11 +35,9 @@ export default function BookClubAI() {
     }
   };
 
-  const fetchImageName = async (title : String) => {
+  const fetchImageName = async (title: String) => {
     try {
-      const { data } = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/getImageName?title=${title}`
-      );
+      const { data } = await api.get(`/getImageName?title=${title}`);
       setCoverImg(data);
     } catch (error) {
       setCoverImg("");
@@ -69,13 +64,7 @@ export default function BookClubAI() {
         {answer && (
           <>
             <div className="mt-4 p-4 rounded-xl shadow-sm">
-              {coverImg && (
-                <img
-                  className=" flex w-40 h-50 rounded-md shadow-md justify-center mb-10"
-                  src={`${process.env.NEXT_PUBLIC_API_URL}/uploads/${coverImg}`}
-                  alt={title}
-                />
-              )}
+              {coverImg && <img className=" flex w-40 h-50 rounded-md shadow-md justify-center mb-10" src={`/uploads/${coverImg}`} alt={title} />}
               <div className="prose max-w-none">
                 <ReactMarkdown>{answer}</ReactMarkdown>
               </div>
@@ -86,13 +75,7 @@ export default function BookClubAI() {
 
       {/* Input area at the bottom */}
       <div className="p-4  flex items-center space-x-2">
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ask Book Club AI..."
-          className="flex-1 border rounded-full px-4 py-2  "
-        />
+        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Ask Book Club AI..." className="flex-1 border rounded-full px-4 py-2  " />
         <Button onClick={handleSearch} className="rounded-full">
           Search
         </Button>

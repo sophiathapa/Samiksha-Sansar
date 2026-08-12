@@ -8,14 +8,15 @@ import {
   saveBook,
   getLikedBooks,
 } from "../controllers/user.js";
+import { protect } from "../middleware/auth.js";
 
 const router = express.Router();
 
-router.get("/users", getAllUsers);
+router.get("/users",protect, getAllUsers);
 router.post("/register", register);
 router.post("/login", login);
-router.patch("/saveBook", saveBook);
-router.get("/getSavedBooks", getSavedBooks);
-router.patch("/removeSavedBook", removeSavedBooks);
-router.get("/getLikedBooks", getLikedBooks);
+router.patch("/saveBook", protect, saveBook);
+router.get("/getSavedBooks", protect, getSavedBooks);
+router.patch("/removeSavedBook", protect, removeSavedBooks);
+router.get("/getLikedBooks", protect, getLikedBooks);
 export default router;

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import BooksGridWithPagination from "@/components/user/BooksGridWithPagination";
 import CategoryFilter from "@/components/user/CategoryFilter";
+import api from "@/lib/axios";
 import { Book } from "@/types/book";
 import axios from "axios";
 import { CircleX, Loader2, Search } from "lucide-react";
@@ -50,7 +51,7 @@ const Home = () => {
       abortControllerRef.current = controller;
 
       try {
-        const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/books/search`, {
+        const { data } = await api.get(`/books/search`, {
           params: { search: trimmed },
           signal: controller.signal,
         });
@@ -127,12 +128,15 @@ const Home = () => {
               </>
             )}
 
-            {selectBook && <BookDetailCard book={selectBook} 
-              onBack={() =>{
-                setSelectBook(null)
-                setSearch("")
-              }} />
-            }
+            {selectBook && (
+              <BookDetailCard
+                book={selectBook}
+                onBack={() => {
+                  setSelectBook(null);
+                  setSearch("");
+                }}
+              />
+            )}
           </main>
         </div>
       </div>

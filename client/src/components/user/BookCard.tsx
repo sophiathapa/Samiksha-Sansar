@@ -1,17 +1,13 @@
 "use client";
 import { Bookmark } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { addSavedBook, removeSavedBook } from "@/lib/redux/features/user/userSlice";
+import api from "@/lib/axios";
 
 export type Book = {
   title: string;
@@ -28,35 +24,26 @@ interface BookCardProps {
 
 const BookCard = ({ book, featured, onClick }: BookCardProps) => {
   const user = useSelector((state: RootState) => state.user);
-  const { id: userId ,savedBooks} = user;
+  const { id: userId, savedBooks } = user;
   const dispatch = useDispatch();
 
   const handleSaveBook = async (bookId: string, userId: string) => {
     try {
-       if(!savedBooks.includes(bookId)){
-              dispatch(addSavedBook(bookId));
-              const { data } = await axios.patch(
-                `${process.env.NEXT_PUBLIC_API_URL}/saveBook`,
-                {
-                  bookId,
-                  userId,
-                }
-              );
-              toast(data.message);
-            }
-            else{
-      
-              dispatch(removeSavedBook(bookId));
-              const { data } = await axios.patch(
-                `${process.env.NEXT_PUBLIC_API_URL}/removeSavedBook`,
-                {
-                  bookId,
-                  userId,
-                }
-              );
-              toast(data.message);
-            }
-      
+      if (!savedBooks.includes(bookId)) {
+        dispatch(addSavedBook(bookId));
+        const { data } = await api.patch(`/saveBook`, {
+          bookId,
+          userId,
+        });
+        toast(data.message);
+      } else {
+        dispatch(removeSavedBook(bookId));
+        const { data } = await api.patch(`/removeSavedBook`, {
+          bookId,
+          userId,
+        });
+        toast(data.message);
+      }
     } catch (error: any) {
       toast(error?.response?.data?.message);
     }
@@ -73,12 +60,7 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
         active:scale-110"
         onClick={onClick}
       >
-        <img
-          src={book.coverImg}
-          alt={`${book.title} book cover by ${book.author}`}
-          loading="lazy"
-          className={`block w-full object-cover h-50 md:h-60`}
-        />
+        <img src={book.coverImg} alt={`${book.title} book cover by ${book.author}`} loading="lazy" className={`block w-full object-cover h-50 md:h-60`} />
       </Card>
       <div className="mt-2">
         <h3 className="text-sm font-semibold truncate" title={book.title}>
@@ -89,18 +71,8 @@ const BookCard = ({ book, featured, onClick }: BookCardProps) => {
       <div className="absolute top-2 right-2">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              variant="secondary"
-              className="rounded-full bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60"
-              onClick={() => handleSaveBook(book._id, userId)}
-              aria-label={`Bookmark ${book.title}`}
-            >
-              <Bookmark className={`w-4 h-4 ${
-                      savedBooks.includes(book._id)
-                        ? " text-red-700 fill-red-700"
-                        : "text-red-700 "
-                    }`} />
+            <Button size="icon" variant="secondary" className="rounded-full bg-background/70 backdrop-blur supports-[backdrop-filter]:bg-background/60" onClick={() => handleSaveBook(book._id, userId)} aria-label={`Bookmark ${book.title}`}>
+              <Bookmark className={`w-4 h-4 ${savedBooks.includes(book._id) ? " text-red-700 fill-red-700" : "text-red-700 "}`} />
             </Button>
           </TooltipTrigger>
           <TooltipContent>Save</TooltipContent>

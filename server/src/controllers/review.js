@@ -6,7 +6,8 @@ import { createNotification } from "./notifications.js";
 
 const addReview = async (req, res) => {
   try {
-    const { userId, bookId, comment } = req.body;
+    const { bookId, comment } = req.body;
+    const userId = req.user?._id.toString();
 
     // validate user and book
     const user = await User.exists({ _id: userId });
@@ -43,7 +44,8 @@ const getReviews = async (req, res) => {
 
 const likeBook = async (req, res) => {
   try {
-    const { bookId, userId } = req.body;
+    const { bookId } = req.body;
+    const userId = req.user?._id.toString();
     const book = await Book.findOne({ _id: bookId });
     const user = await User.exists({ _id: userId });
     if (!book) {
@@ -65,7 +67,8 @@ const likeBook = async (req, res) => {
 
 const unlikeBook = async (req, res) => {
   try {
-    const { bookId, userId } = req.body;
+    const { bookId } = req.body;
+    const userId = req.user?._id.toString();
 
     const book = await Book.findOne({ _id: bookId });
     const user = await User.exists({ _id: userId });
@@ -87,7 +90,8 @@ const unlikeBook = async (req, res) => {
 
 const replyComment = async (req, res) => {
   try {
-    const { userId, bookId, comment, parentId } = req.body;
+    const { bookId, comment, parentId } = req.body;
+    const userId = req.user?._id.toString();
 
     const [user, book, review] = await Promise.all([
       User.findById(userId).select("firstName lastName"),
@@ -131,7 +135,8 @@ const replyComment = async (req, res) => {
 
 const likeComment = async (req, res) => {
   try {
-    const { reviewId, userId } = req.body;
+    const { reviewId } = req.body;
+    const userId = req.user?._id.toString();
     const [reviewExists, user] = await Promise.all([
       Review.exists({ _id: reviewId }), 
       User.findById(userId).select("firstName lastName")
@@ -178,8 +183,8 @@ import mongoose from "mongoose";
 
 const deleteReview = async (req, res) => {
   try {
-    const { commentId, userId } = req.query;
-    // const userId = req.user?._id; 
+    const { commentId } = req.query;
+    const userId = req.user?._id.toString(); 
 
     if (!mongoose.Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: "Invalid review id" });
@@ -232,7 +237,8 @@ const deleteReview = async (req, res) => {
 
 const reportComment = async(req,res) => {
   try {
-    const {userId, commentId} = req.query;
+    const { commentId } = req.query;
+    const userId = req.user?._id.toString();
     const [user, review] = await Promise.all([
       User.exists({ _id:userId }),
       Review.exists({ _id:commentId }),

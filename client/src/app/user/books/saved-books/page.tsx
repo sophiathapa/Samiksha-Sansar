@@ -1,9 +1,9 @@
 "use client";
 import { SkeletonDemo } from "@/components/Skeleton";
 import BookCard from "@/components/user/BookCard";
+import api from "@/lib/axios";
 import { RootState } from "@/lib/redux/store";
 import { Book } from "@/types/book";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
@@ -19,7 +19,7 @@ const Saved = () => {
   const fetchSavedBooks = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/getSavedBooks?userId=${userId}&all=yes`);
+      const { data } = await api.get(`/getSavedBooks?all=yes`);
       setSavedBooks(data.savedBooks);
     } catch (error) {
       console.log(error);
@@ -39,7 +39,7 @@ const Saved = () => {
         {savedBooks.length === 0 && !loading ? (
           <div className="flex justify-center mt-30 text-base">No Saved Books</div>
         ) : (
-           <>
+          <>
             {!selectBook && (
               <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-3">
                 {savedBooks.map((book: Book, id) => (
@@ -57,7 +57,6 @@ const Saved = () => {
         )}
 
         {loading && <SkeletonDemo />}
-        
       </div>
     </div>
   );
