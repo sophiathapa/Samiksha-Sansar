@@ -130,16 +130,40 @@ const searchBook = async (req, res) => {
 };
 
 const editBook = async (req, res) => {
-  const { id } = req.query;
-  req.body.coverImg = req.file?.path;
-  req.body.genre = JSON.parse(req.body.genre);
-  await Book.findByIdAndUpdate(id, { $set: req.body }, { $new: true });
+  try {
+    const { id } = req.params;
 
-  if (!id) {
-    return res.status(401).json(" Book with that id not found");
+    if (!id) {
+      return res.status(400).json({ message: "Book id is required" });
+    }
+
+    if (req.file?.path) {
+      req.body.coverImg = req.file.path;
+    }
+
+    if (req.body.genre) {
+      try {
+        req.body.genre = JSON.parse(req.body.genre);
+      } catch {
+        return res.status(400).json({ message: "Invalid genre format" });
+      }
+    }
+
+    const book = await Book.findById(id);
+    if (!book) {
+      return res.status(404).json({ message: "Book with that id not found" });
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      { $set: req.body },
+      { new: true, runValidators: true }
+    );
+
+    return res.status(200).json({ message: "Book updated", book: updatedBook });
+  } catch (err) {
+    return res.status(500).json({ message: "Something went wrong", error: err.message });
   }
-
-  return res.status(200).json("Book updated");
 };
 
 const getImageName = async (req, res) => {

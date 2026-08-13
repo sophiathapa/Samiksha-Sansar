@@ -8,6 +8,21 @@ const getAllUsers = async (req, res) => {
   res.json(users);
 };
 
+const getUserProfile = async(req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findOne ({ _id : userId }).select("firstName middleName lastName email gender profileUrl country genreLiked language");
+    if(!user) {
+      return res.status(404).json({ message: "user not found" });
+    }
+    return res.status(200).json({ user: user });
+  } catch(error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+}
+
 const register = async (req, res) => {
   const userExist = await User.exists({ email: req.body.email });
   if (userExist) {
@@ -156,4 +171,45 @@ const getLikedBooks = async (req, res) => {
   }
 };
 
-export { getAllUsers, register, login, getMe, logout, saveBook, getSavedBooks, removeSavedBooks, getLikedBooks };
+const editProfile = async (req, res) => {
+  try {
+    const userId = req.user?._id;
+    if (!userId) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    const protectedFields = ["password", "role", "email", "likedBooks", "_id", "savedBooks", "favouriteBooks"];
+
+    const updates = {};
+    for (const key of Object.keys(req.body)) {
+      if (!protectedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    }
+
+    if (updates.genreLiked !== undefined) {
+      try {
+        updates.genreLiked = JSON.parse(updates.genreLiked);
+      } catch {
+        return res.status(400).json({ message: "genreLiked must be valid JSON" });
+      }
+    }
+
+    if (req.file?.path) {
+      updates.profileUrl = req.file.path;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    return res.status(200).json({ message: "Profile updated", user: updatedUser });
+  } catch (error) {
+    console.error("editProfile error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export { getAllUsers, getUserProfile, register, login, getMe, logout, saveBook, getSavedBooks, removeSavedBooks, getLikedBooks, editProfile };

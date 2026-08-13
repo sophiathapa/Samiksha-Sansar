@@ -1,6 +1,7 @@
 import express from "express";
 import {
   getAllUsers,
+  getUserProfile,
   getSavedBooks,
   login,
   register,
@@ -9,12 +10,16 @@ import {
   getLikedBooks,
   logout,
   getMe,
+  editProfile,
 } from "../controllers/user.js";
 import { protect } from "../middleware/auth.js";
+import { uploadProfile } from "../middleware/multer.js";
 
 const router = express.Router();
 
 router.get("/users",protect, getAllUsers);
+router.get("/userProfile",protect, getUserProfile);
+router.patch("/userProfile",protect, uploadProfile.single("profileUrl"), editProfile);
 router.post("/register", register);
 router.post("/login", login);
 router.get("/user", getMe);

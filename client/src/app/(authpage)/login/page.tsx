@@ -31,10 +31,17 @@ const Login = () => {
     try {
       setLoading(true);
       const { data } = await api.post(`/login`, values);
-      const { _id, firstName, email, role, likedBooks, savedBooks } = data.user;
+      const { _id, firstName, middleName, lastName, email, role, likedBooks, savedBooks } = data.user;
       if (data?.isLoggedIn) {
-        router.push("/user/home");
-        dispatch(setUser({ name: firstName, id: _id, role, email, likedBooks, savedBooks }));
+        if(role === "user") {
+          router.push("/user/home");
+        } else {
+          router.push("/admin/home");
+        }
+        dispatch(setUser({ 
+          name: [firstName, middleName, lastName].filter(Boolean).join(" "), 
+          id: _id, role, email, likedBooks, savedBooks 
+        }));
       }
     } catch (error: any) {
       setLoading(false);

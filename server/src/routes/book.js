@@ -21,7 +21,7 @@ import {
   fetchBookWithoutPagination,
   getBookById
 } from "../controllers/book.js";
-import upload from "../middleware/multer.js";
+import { upload } from "../middleware/multer.js";
 import { protect, restrictTo } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -37,7 +37,7 @@ router.get("/books/search", protect, searchBook);
 router.get("/books/genre", protect, getBookByGenre);
 router.delete("/book", protect, restrictTo("admin"), deleteBook);
 router.get("/getImageName", getImageName);
-router.put("/book/edit", protect, restrictTo("admin"), upload.single("coverImg"), editBook);
+router.patch("/book/edit/:id", protect, restrictTo("admin"), upload.single("coverImg"), editBook);
 router.patch("/borrowBook", protect, borrowBook);
 router.patch("/reserveBook", protect, reserveBook);
 router.get("/getBorrowedBooks", protect, getBorrowedBook);

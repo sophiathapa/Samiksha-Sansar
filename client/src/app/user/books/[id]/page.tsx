@@ -13,25 +13,23 @@ import { toast } from "sonner";
 export default function BookDetails() {
   const { id } = useParams<{ id: string }>();
   const user = useSelector((state: RootState) => state.user);
-  const { id:userId } = user
+  const { id: userId } = user;
   const [selectBook, setSelectBook] = useState<Book | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const commentId: string = searchParams.get("commentId") || "";
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
   const fetchBookById = async () => {
     try {
-      const book = await api.get(`/getBookById/${id}`);
-      setSelectBook(book?.data);
-      const { reservedBy, borrowedId } = book?.data;
-      if (userId === borrowedId) {
+      const { data } = await api.get(`/getBookById/${id}`);
+      setSelectBook(data);
+      if (userId === data?.borrowerId) {
         dispatch(addBorrowedBook(id));
       }
-      if (reservedBy.includes(userId)) {
+      if (data?.reservedBy.includes(userId)) {
         dispatch(addReserveBook(id));
       }
-      // dispatch(setUser({ name: firstName, id: _id, role, email, likedBooks, savedBooks }));
     } catch (error: any) {
       toast.warning(error?.response?.data?.message, { position: "top-right" });
     }

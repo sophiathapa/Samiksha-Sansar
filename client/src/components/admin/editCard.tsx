@@ -11,6 +11,7 @@ import { Badge } from "../ui/badge";
 import { useRouter } from "next/navigation";
 import { AlertMessage } from "../Alert/AlertMessage";
 import { Book } from "@/types/book";
+import api from "@/lib/axios";
 
 interface editCardProps {
   book: Book;
@@ -100,12 +101,13 @@ const EditCard = ({ book, onback }: editCardProps) => {
     formData.append("coverImg", bookData.coverImg);
     formData.append("language", bookData.language);
 
-    axios
-      .put(`/book/edit?id=${bookData._id}`, formData)
+    api
+      .patch(`/book/edit/${bookData._id}`, formData)
       .then(() => {
         setStatus({ success: true, message: "Book edited successfully" });
       })
       .catch((error) => {
+        console.log(error);
         setStatus({ success: false, message: `${error?.response?.data?.message}` });
       });
   };

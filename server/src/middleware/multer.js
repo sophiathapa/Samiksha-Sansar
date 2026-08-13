@@ -11,6 +11,17 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const storage1 = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'samiksha-sansar/profile', 
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    transformation: [{ width: 800, height: 1000, crop: 'limit' }], 
+  },
+});
 
-export default upload;
+
+const upload = multer({ storage: storage });
+const uploadProfile = multer({ storage: storage1 });
+
+export  { upload, uploadProfile };

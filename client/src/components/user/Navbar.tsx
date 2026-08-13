@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { timeDisplay } from "@/utils/time";
 import api from "@/lib/axios";
 import { clearUser } from "@/lib/redux/features/user/userSlice";
+import Loader from "./Loader";
 
 const SEARCH_DEBOUNCE_MS = 500;
 const MAX_BADGE_COUNT = 9;
@@ -32,17 +33,22 @@ const Navbar = () => {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const isDropdownOpen = Boolean(search);
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = async() => {
     try {
+      setLoading(true);
       await api.post("/logout");
 
     } catch(error) {
       console.log(error);
 
     } finally {
-      dispatch(clearUser());
-      router.push("/");
+       setTimeout(() => {
+        setLoading(false);
+        router.push("/");
+        dispatch(clearUser());
+    }, 2000);
     }
   };
 
@@ -182,6 +188,10 @@ const Navbar = () => {
         console.warn("Unhandled notification type:", notification.type);
     }
   };
+
+  if(loading) {
+    return <Loader/>
+  }
 
   return (
     <>
