@@ -2,7 +2,6 @@
 import AuthGuard from "@/components/auth/AuthGaurd";
 import Providers from "@/components/auth/Providers";
 import Navbar from "@/components/user/Navbar";
-import { Provider } from "react-redux";
 import ErrorPage from "../error-page/page";
 
 

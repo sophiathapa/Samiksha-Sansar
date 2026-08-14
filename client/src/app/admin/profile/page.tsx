@@ -109,9 +109,11 @@ export default function ProfileSettings() {
         payload.append("profileUrl", formData.profileUrl);
       }
 
-      await api.patch("/userProfile", payload, {
+      const {data} = await api.patch("/userProfile", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      const { profileUrl } = data.user;
+      
       await fetchUser();
       toast.success("Profile updated", { position: "top-right" });
     } catch (error) {

@@ -20,12 +20,12 @@ export function Hero() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90" onClick={()=>router.push("/register")}>
                 Join the club
               </Button>
-              <Button size="lg" variant="outline" onClick={()=> router.push("/user/bookClubAI")}>
+              {/* <Button size="lg" variant="outline" onClick={()=> router.push("/user/bookClubAI")}>
                 Ask Book Club AI
-              </Button>
+              </Button> */}
             </div>
 
             <div className="flex items-center gap-6 text-sm text-muted-foreground">

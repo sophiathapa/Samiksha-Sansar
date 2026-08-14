@@ -34,7 +34,7 @@ const getReviews = async (req, res) => {
   if (!book) {
     return res.status(404).json({ message: "book not found" });
   }
-  const reviews = await Review.find({ bookId: bookId }).populate("userId", "firstName lastName");
+  const reviews = await Review.find({ bookId: bookId }).populate("userId", "firstName middleName lastName profileUrl");
   if (reviews === null) {
     return res.status(401).json({ message: "No Reviews" });
   }
@@ -93,11 +93,7 @@ const replyComment = async (req, res) => {
     const { bookId, comment, parentId } = req.body;
     const userId = req.user?._id.toString();
 
-    const [user, book, review] = await Promise.all([
-      User.findById(userId).select("firstName lastName"),
-      Book.exists({ _id: bookId }), 
-      Review.findOne({ _id: parentId }), 
-    ]);
+    const [user, book, review] = await Promise.all([User.findById(userId).select("firstName lastName"), Book.exists({ _id: bookId }), Review.findOne({ _id: parentId })]);
 
     if (!user) return res.status(401).json({ message: "User not found" });
     if (!book) return res.status(401).json({ message: "Book not found" });
@@ -114,15 +110,15 @@ const replyComment = async (req, res) => {
 
     if (userId !== recipient) {
       const notification = await createNotification({
-          recipient: recipient,
-          sender: userId,
-          type: "comment-reply",
-          bookId: bookId,
-          commentId: newReview?._id,
-          message: `${senderName} replied your comment.`,
-          read: false,
-        });
-  
+        recipient: recipient,
+        sender: userId,
+        type: "comment-reply",
+        bookId: bookId,
+        commentId: newReview?._id,
+        message: `${senderName} replied your comment.`,
+        read: false,
+      });
+
       io.to(`user:${recipient}`).emit("notification", notification);
     }
 
@@ -137,10 +133,7 @@ const likeComment = async (req, res) => {
   try {
     const { reviewId } = req.body;
     const userId = req.user?._id.toString();
-    const [reviewExists, user] = await Promise.all([
-      Review.exists({ _id: reviewId }), 
-      User.findById(userId).select("firstName lastName")
-    ]);
+    const [reviewExists, user] = await Promise.all([Review.exists({ _id: reviewId }), User.findById(userId).select("firstName lastName")]);
 
     if (!reviewExists) return res.status(404).json({ message: "review not found" });
     if (!user) return res.status(404).json({ message: "user not found" });
@@ -151,9 +144,9 @@ const likeComment = async (req, res) => {
 
     const updated = await Review.findOneAndUpdate({ _id: reviewId }, alreadyLiked ? { $pull: { likedBy: userId }, $inc: { totalLikes: -1 } } : { $addToSet: { likedBy: userId }, $inc: { totalLikes: 1 } }, { new: true });
 
-    const recipient = updated?.userId.toString()
+    const recipient = updated?.userId.toString();
 
-    if (!alreadyLiked && (userId !== recipient)) {
+    if (!alreadyLiked && userId !== recipient) {
       const notification = await createNotification({
         recipient: recipient,
         sender: userId,
@@ -184,16 +177,14 @@ import mongoose from "mongoose";
 const deleteReview = async (req, res) => {
   try {
     const { commentId } = req.query;
-    const userId = req.user?._id.toString(); 
+    const userId = req.user?._id.toString();
 
     if (!mongoose.Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: "Invalid review id" });
     }
 
     // Only fetch the fields we actually need
-    const review = await Review.findById(commentId).select(
-      "userId parentId bookId rating"
-    );
+    const review = await Review.findById(commentId).select("userId parentId bookId rating");
 
     if (!review) {
       return res.status(404).json({ message: "Review not found" });
@@ -218,46 +209,36 @@ const deleteReview = async (req, res) => {
       { $project: { "descendants._id": 1 } },
     ]);
 
-    const idsToDelete = [
-      review._id,
-      ...(descendants[0]?.descendants.map((d) => d._id) ?? []),
-    ];
+    const idsToDelete = [review._id, ...(descendants[0]?.descendants.map((d) => d._id) ?? [])];
 
     await Review.deleteMany({ _id: { $in: idsToDelete } });
 
     return res.status(200).json({
       message: "Review deleted",
     });
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
 };
 
-const reportComment = async(req,res) => {
+const reportComment = async (req, res) => {
   try {
     const { commentId } = req.query;
     const userId = req.user?._id.toString();
-    const [user, review] = await Promise.all([
-      User.exists({ _id:userId }),
-      Review.exists({ _id:commentId }),
-    ])
-  
-    if(!userId) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    if(!userId) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    return res.status(200).json({ message:"Comment reported" })
+    const [user, review] = await Promise.all([User.exists({ _id: userId }), Review.exists({ _id: commentId })]);
 
-  } catch(error)
-  {
-     console.error(error);
+    if (!userId) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    if (!userId) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.status(200).json({ message: "Comment reported" });
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-}
-
+};
 
 export { addReview, getReviews, likeBook, unlikeBook, replyComment, likeComment, deleteReview, reportComment };

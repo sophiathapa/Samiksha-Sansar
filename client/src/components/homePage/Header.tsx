@@ -23,7 +23,7 @@ const Header = () => {
           <Button
             className="h-[30px] md:h-[38px] w-auto bg-primary bg-primary text-primary-foreground hover:bg-primary/90"
           >
-            Join now
+            Login
           </Button>
         </Link>
       </div>

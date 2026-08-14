@@ -16,7 +16,9 @@ export type Review = {
   userId: {
     _id: string;
     firstName: string;
+    middleName: string;
     lastName: string;
+    profileUrl: string;
   };
   comment: string;
   likedBy: string[];
@@ -86,14 +88,14 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
     <div className={`group bg-comment border ${selectedCommentId === review._id && "border-ring ring-ring/50 ring-[3px]"} rounded-md p-4 hover:bg-comment-hover transition-colors duration-200`} ref={commentRef}>
       <div className="flex items-start space-x-3">
         <Avatar className="h-10 w-10 ring-2 ring-primary/10">
-          <AvatarImage alt={`${review?.userId?.firstName}'s avatar`} />
-          <AvatarFallback className="bg-primary/10 text-primary font-medium">{review?.userId?.firstName[0]?.toUpperCase()}</AvatarFallback>
+          {!!review?.userId?.profileUrl ? <AvatarImage src={review?.userId?.profileUrl} alt="Profile" /> :
+          <AvatarFallback className="bg-primary/10 text-primary font-medium">{review?.userId?.firstName[0]?.toUpperCase()}</AvatarFallback>}
         </Avatar>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2">
-              <h4 className="text-sm text-comment-author">{review?.userId?.firstName + " " + review?.userId?.lastName}</h4>
+              <h4 className="text-sm text-comment-author">{review?.userId?.firstName + " " + review?.userId?.middleName + " " + review?.userId?.lastName}</h4>
               <span className="ml-2">{review.comment}</span>
             </div>
 
@@ -130,7 +132,7 @@ export const Comment = ({ review, commentRef, selectedCommentId, getComments, on
               {!(likeCount === 0) && <span className="text-[10px] font-medium">{likeCount}</span>}
             </div>
 
-            <button className="flex items-center h-8 px-2 text-[10px] font-medium transition-colors hover:scale-110 duration-200" onClick={() => onReply(review._id, `${review.userId.firstName}${review.userId.lastName}`)}>
+            <button className="flex items-center h-8 px-2 text-[10px] font-medium transition-colors hover:scale-110 duration-200" onClick={() => onReply(review._id, `${review.userId.firstName}${review.userId.middleName}${review.userId.lastName}`)}>
               <MessageCircle className="h-3 w-3 mr-1 text-[10px]" />
               Reply
             </button>

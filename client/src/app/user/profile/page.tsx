@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { Camera } from "lucide-react";
 import api from "@/lib/axios";
 import { toast } from "sonner";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -15,6 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { ChevronDown, X } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { setUser, updateProfileUrl } from "@/lib/redux/features/user/userSlice";
 
 const GENDERS = ["Female", "Male", "Other"] as const;
 const COUNTRIES = ["Nepal", "India", "United States", "United Kingdom", "Australia"] as const;
@@ -57,11 +58,12 @@ const EMPTY_FORM: FormData = {
 
 export default function ProfileSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<User | null>(null);
   const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [avatarPreview, setAvatarPreview] = useState<string>();
   const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const dispatch = useDispatch();
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -93,7 +95,7 @@ export default function ProfileSettings() {
       const fetchedUser = data?.user;
       if (!fetchedUser) return;
 
-      setUser(fetchedUser);
+      setUserData(fetchedUser);
       setFormData({
         firstName: fetchedUser.firstName,
         middleName: fetchedUser.middleName ?? "",
@@ -105,6 +107,7 @@ export default function ProfileSettings() {
         language: fetchedUser.language ?? "",
       });
       setAvatarPreview(fetchedUser.profileUrl);
+
     } catch (error) {
       console.error("Error fetching user:", error);
       toast.error("Failed to load profile", { position: "top-right" });
@@ -129,10 +132,11 @@ export default function ProfileSettings() {
         payload.append("profileUrl", formData.profileUrl);
       }
 
-      await api.patch("/userProfile", payload, {
+      const {data} = await api.patch("/userProfile", payload, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      await fetchUser();
+      dispatch(updateProfileUrl(data.user?.profileUrl));
+
       toast.success("Profile updated", { position: "top-right" });
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -191,7 +195,7 @@ export default function ProfileSettings() {
 
                     <div className="pb-1">
                       <h2 className="font-serif text-xl leading-tight">{fullName}</h2>
-                      <p className="text-sm text-muted-foreground">{user?.email}</p>
+                      <p className="text-sm text-muted-foreground">{userData?.email}</p>
                     </div>
                   </div>
 
@@ -306,7 +310,7 @@ export default function ProfileSettings() {
                     </Avatar>
 
                     <div>
-                      <p className="text-sm">{user?.email}</p>
+                      <p className="text-sm">{userData?.email}</p>
                       <p className="text-xs text-muted-foreground">Primary</p>
                     </div>
                   </div>

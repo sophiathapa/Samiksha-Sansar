@@ -48,6 +48,10 @@ export const userSlice = createSlice({
 
     clearUser: () => initialState,
 
+    updateProfileUrl: (state, action) => {
+      state.profileUrl = action.payload;
+    },
+
     addLikedBook: (state, action) => {
       if (!state.likedBooks.includes(action.payload)) {
         state.likedBooks.push(action.payload);
@@ -110,6 +114,7 @@ export const userSlice = createSlice({
 export const {
   setUser,
   clearUser,
+  updateProfileUrl,
   addLikedBook,
   removeLikedBook,
   addBorrowedBook,
