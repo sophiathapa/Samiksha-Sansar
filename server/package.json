@@ -23,7 +23,8 @@
     "multer": "^2.2.0",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.5",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "cookie-parser": "^1.4.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
