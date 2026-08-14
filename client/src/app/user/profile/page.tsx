@@ -1,17 +1,25 @@
 "use client";
-
 import { useEffect, useRef, useState } from "react";
-import { Camera, Check, ChevronDown } from "lucide-react";
+import { Camera } from "lucide-react";
 import api from "@/lib/axios";
 import { toast } from "sonner";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+import { ChevronDown, X } from "lucide-react";
 
+const GENDERS = ["Female", "Male", "Other"] as const;
+const COUNTRIES = ["Nepal", "India", "United States", "United Kingdom", "Australia"] as const;
 const GENRES = ["Fiction", "Fantasy", "Mystery", "Romance", "Sci-Fi", "Thriller", "Poetry", "Biography", "History", "Horror", "Self-Help", "Non-Fiction"] as const;
-
-const GENDERS = ["Female", "Male", "Other"];
-
-const COUNTRIES = ["Nepal", "India", "United States", "United Kingdom", "Australia"];
-
-const LANGUAGES = ["English", "Nepali", "Hindi", "Spanish", "French"];
+const LANGUAGES = ["English", "Nepali", "Hindi", "Spanish", "French"] as const;
 
 interface User {
   firstName: string;
@@ -21,8 +29,8 @@ interface User {
   profileUrl?: string;
   gender?: string;
   country?: string;
-  language?: string;
   genreLiked?: string[];
+  language?: string;
 }
 
 interface FormData {
@@ -31,317 +39,316 @@ interface FormData {
   lastName: string;
   gender: string;
   country: string;
-  language: string;
-  genreLiked: string[];
   profileUrl: string | File;
+  genreLiked: string[];
+  language: string;
 }
+
+const EMPTY_FORM: FormData = {
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  gender: "",
+  country: "",
+  profileUrl: "",
+  genreLiked: [],
+  language: "",
+};
 
 export default function ProfileSettings() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    gender: "",
-    country: "",
-    language: "",
-    genreLiked: [],
-    profileUrl: "",
-  });
+  const [formData, setFormData] = useState<FormData>(EMPTY_FORM);
   const [avatarPreview, setAvatarPreview] = useState<string>();
-  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
   const updateField = <K extends keyof FormData>(field: K, value: FormData[K]) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleGenre = (genre: string) => {
     setFormData((prev) => ({
       ...prev,
-      [field]: value,
+      genreLiked: prev.genreLiked.includes(genre) ? prev.genreLiked.filter((g) => g !== genre) : [...prev.genreLiked, genre],
     }));
   };
 
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
+  const handleAvatarClick = () => fileInputRef.current?.click();
 
   const handleImageFile = (file: File) => {
-    if (file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setAvatarPreview(result);
-        setFormData((prev) => ({ ...prev, profileUrl: file })); // no `any` needed now
-      };
-      reader.readAsDataURL(file);
-    }
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setAvatarPreview(result);
+      setFormData((prev) => ({ ...prev, profileUrl: file }));
+    };
+    reader.readAsDataURL(file);
   };
-  
+
   const fetchUser = async () => {
     try {
-      setLoading(true);
-
       const { data } = await api.get("/userProfile");
-
       const fetchedUser = data?.user;
-
       if (!fetchedUser) return;
 
       setUser(fetchedUser);
-
       setFormData({
         firstName: fetchedUser.firstName,
         middleName: fetchedUser.middleName ?? "",
         lastName: fetchedUser.lastName,
         gender: fetchedUser.gender ?? "",
         country: fetchedUser.country ?? "",
-        language: fetchedUser.language ?? "",
-        genreLiked: fetchedUser.genreLiked ?? [],
         profileUrl: fetchedUser.profileUrl ?? "",
+        genreLiked: fetchedUser.genreLiked ?? [],
+        language: fetchedUser.language ?? "",
       });
-
       setAvatarPreview(fetchedUser.profileUrl);
     } catch (error) {
       console.error("Error fetching user:", error);
+      toast.error("Failed to load profile", { position: "top-right" });
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
-  const toggleGenre = (genre: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      genreLiked: prev.genreLiked.includes(genre)
-        ? prev.genreLiked.filter((g) => g !== genre)
-        : [...prev.genreLiked, genre],
-    }));
-  };
+  const handleEdit = async () => {
+    setSaving(true);
+    try {
+      const payload = new FormData();
+      payload.append("firstName", formData.firstName);
+      payload.append("middleName", formData.middleName);
+      payload.append("lastName", formData.lastName);
+      payload.append("gender", formData.gender);
+      payload.append("country", formData.country);
+      payload.append("language", formData.language);
+      payload.append("genreLiked", JSON.stringify(formData.genreLiked));
 
-const handleEdit = async () => {
-  try {
-    setLoading(true);
+      if (formData.profileUrl instanceof File) {
+        payload.append("profileUrl", formData.profileUrl);
+      }
 
-    const payload = new FormData();
-    payload.append("firstName", formData.firstName);
-    payload.append("middleName", formData.middleName);
-    payload.append("lastName", formData.lastName);
-    payload.append("gender", formData.gender);
-    payload.append("country", formData.country);
-    payload.append("language", formData.language);
-    payload.append("genreLiked", JSON.stringify(formData.genreLiked));
-
-    // Only attach the file if the user picked a new one.
-    // If profileUrl is still a string (unchanged), don't send it —
-    // let the backend keep the existing value.
-    if (formData.profileUrl instanceof File) {
-      payload.append("profileUrl", formData.profileUrl);
+      await api.patch("/userProfile", payload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      await fetchUser();
+      toast.success("Profile updated", { position: "top-right" });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile", { position: "top-right" });
+    } finally {
+      setSaving(false);
     }
-
-    await api.patch("/userProfile", payload, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    setTimeout(() => setLoading(false), 2200);
-    fetchUser();
-
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    toast.error("Failed to update profile", { position: "top-right" });
-    return; // don't show success toast on failure
-  } 
-
-  toast.success("Profile Edited", { position: "top-right" });
-};
+  };
 
   useEffect(() => {
     fetchUser();
   }, []);
 
-  if (loading && !user) {
-    return (
-      <div className="flex min-h-[300px] items-center justify-center">
-        <div className="text-sm text-[#8A8371]">Loading profile...</div>
-      </div>
-    );
-  }
+  const fullName = [formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(" ");
+  const initials = formData.firstName ? formData.firstName.charAt(0).toUpperCase() : "?";
 
   return (
-    <div className="mx-auto w-full max-w-3xl rounded-3xl border border-border bg-card shadow-2xl">
-      {/* Cover */}
-      <div className="h-24 rounded-t-3xl " />
+    <>
+      <div className="flex justify-center p-10">
+        <Card className="mt-10 w-full max-w-3xl overflow-hidden rounded-3xl shadow-xl py-0">
+          <div className="h-24 bg-muted" />
 
-      <div className="px-8 pb-8 sm:px-10">
-        {/* Avatar + Name */}
-        <div className="-mt-12 flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex items-end gap-4">
-            {/* Avatar */}
-            <button type="button" onClick={handleAvatarClick} className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-primary/30 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50" aria-label="Change profile photo">
-              {avatarPreview ? (
-                <img src={avatarPreview} alt="Profile" className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-[#EFE6D1] font-serif text-2xl text-[#1F2A3C]">{formData.firstName ? formData.firstName.charAt(0).toUpperCase() : "?"}</div>
-              )}
+          <CardContent className="px-8 pb-8 sm:px-10">
+            {pageLoading ? (
+              <ProfileSkeleton />
+            ) : (
+              <>
+                <div className="-mt-12 flex flex-col items-start gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="flex items-end gap-4">
+                    <button
+                      type="button"
+                      onClick={handleAvatarClick}
+                      className="group relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border-4 border-primary/30 shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                      aria-label="Change profile photo"
+                    >
+                      <Avatar className="h-full w-full rounded-none">
+                        <AvatarImage src={avatarPreview} alt="Profile" className="object-cover" />
+                        <AvatarFallback className="rounded-none font-serif text-2xl">{initials}</AvatarFallback>
+                      </Avatar>
 
-              <div className="absolute inset-0 flex items-center justify-center bg-[#1F2A3C]/0 transition-colors duration-200 group-hover:bg-[#1F2A3C]/55">
-                <Camera className="h-5 w-5 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" strokeWidth={1.75} />
-              </div>
-            </button>
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors duration-200 group-hover:bg-black/55">
+                        <Camera className="h-5 w-5 text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100" strokeWidth={1.75} />
+                      </div>
+                    </button>
 
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleImageFile(file);
-              }}
-            />
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleImageFile(file);
+                      }}
+                    />
 
-            {/* Name + Email */}
-            <div className="pb-1">
-              <h2 className="font-serif text-xl leading-tight text-[#1F2A3C]">{[formData.firstName, formData.middleName, formData.lastName].filter(Boolean).join(" ")}</h2>
+                    <div className="pb-1">
+                      <h2 className="font-serif text-xl leading-tight">{fullName}</h2>
+                      <p className="text-sm text-muted-foreground">{user?.email}</p>
+                    </div>
+                  </div>
 
-              <p className="text-sm text-[#8A8371]">{user?.email}</p>
-            </div>
-          </div>
+                  <Button onClick={handleEdit} disabled={saving}>
+                    {saving ? "Saving..." : "Save"}
+                  </Button>
+                </div>
 
-          {/* Save */}
-          <button type="button" onClick={handleEdit} disabled={loading} className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60">
-            {loading ? "Saving..." : "Edit"}
-          </button>
-        </div>
+                <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+                  <Field label="First name" htmlFor="firstName">
+                    <Input id="firstName" value={formData.firstName} onChange={(e) => updateField("firstName", e.target.value)} placeholder="Your first name" />
+                  </Field>
 
-        {/* Form */}
-        <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-          <Field label="First name">
-            <input value={formData.firstName} onChange={(e) => updateField("firstName", e.target.value)} placeholder="Your first name" className="input" />
-          </Field>
+                  <Field label="Middle name" htmlFor="middleName">
+                    <Input id="middleName" value={formData.middleName} onChange={(e) => updateField("middleName", e.target.value)} placeholder="Your middle name" />
+                  </Field>
 
-          <Field label="Middle name">
-            <input value={formData.middleName} onChange={(e) => updateField("middleName", e.target.value)} placeholder="Your middle name" className="input" />
-          </Field>
+                  <Field label="Last name" htmlFor="lastName">
+                    <Input id="lastName" value={formData.lastName} onChange={(e) => updateField("lastName", e.target.value)} placeholder="Your last name" />
+                  </Field>
 
-          <Field label="Last name">
-            <input value={formData.lastName} onChange={(e) => updateField("lastName", e.target.value)} placeholder="Your last name" className="input" />
-          </Field>
+                  <Field label="Gender" htmlFor="gender">
+                    <Select value={formData.gender} onValueChange={(value) => updateField("gender", value ?? "")}>
+                      <SelectTrigger id="gender" className="w-full">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GENDERS.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
 
-          <Field label="Gender">
-            <Select value={formData.gender} onChange={(value) => updateField("gender", value)} options={GENDERS} placeholder="Select gender" />
-          </Field>
+                  <Field label="Country" htmlFor="country">
+                    <Select value={formData.country} onValueChange={(value) => updateField("country", value ?? "")}>
+                      <SelectTrigger id="country" className="w-full">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COUNTRIES.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
 
-          <Field label="Country">
-            <Select value={formData.country} onChange={(value) => updateField("country", value)} options={COUNTRIES} placeholder="Select country" />
-          </Field>
+                  <Field label="Preferred language" htmlFor="language">
+                    <Select value={formData.language} onValueChange={(value) => updateField("language", value ?? "")}>
+                      <SelectTrigger id="language" className="w-full">
+                        <SelectValue placeholder="Select language" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
 
-          <Field label="Language" className="sm:col-span-2 sm:max-w-[calc(50%-1rem)]">
-            <Select value={formData.language} onChange={(value) => updateField("language", value)} options={LANGUAGES} placeholder="Select language" />
-          </Field>
-        </div>
+                  <Field label="Favorite genres" htmlFor="genreLiked" className="sm:col-span-2">
+                    <Popover>
+                      <PopoverTrigger>
+                        <Button id="genreLiked" variant="outline" role="combobox" className="w-full justify-between font-normal">
+                          <span className="truncate text-left">{formData.genreLiked.length ? `${formData.genreLiked.length} selected` : "Select genres"}</span>
+                          <ChevronDown className="h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 p-2" align="start">
+                        <div className="flex flex-wrap gap-1.5">
+                          {GENRES.map((genre) => {
+                            const selected = formData.genreLiked.includes(genre);
+                            return (
+                              <Badge key={genre} variant={selected ? "default" : "outline"} className="cursor-pointer select-none" onClick={() => toggleGenre(genre)}>
+                                {genre}
+                              </Badge>
+                            );
+                          })}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
 
-        <div className="mt-8">
-          <div className="mb-3 flex items-baseline justify-between">
-            <label className="text-sm font-medium text-[#1F2A3C]">Genres liked</label>
+                    {formData.genreLiked.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {formData.genreLiked.map((genre) => (
+                          <Badge key={genre} variant="secondary" className="gap-1 pr-1">
+                            {genre}
+                            <button type="button" onClick={() => toggleGenre(genre)} className="rounded-full p-0.5 hover:bg-muted-foreground/20" aria-label={`Remove ${genre}`}>
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </Field>
+                </div>
 
-            <span className="text-xs text-[#8A8371]">{formData.genreLiked.length ? `${formData.genreLiked.length} selected` : "Pick a few to shape your feed"}</span>
-          </div>
+                <Separator className="mt-8" />
 
-          <div className="flex flex-wrap gap-2">
-            {GENRES.map((genre) => {
-              const active = formData.genreLiked.includes(genre);
+                <div className="mt-6">
+                  <p className="mb-3 text-sm font-medium">My email address</p>
 
-              return (
-                <button key={genre} type="button" onClick={() => toggleGenre(genre)} className={`rounded-full border px-4 py-1.5 text-sm transition-colors duration-150 ${active ? "border-[#1F2A3C] bg-primary/80 text-white" : "border-[#DCD3BC] bg-white text-[#4A4638] hover:border-[#C9A15A]"}`}>
-                  {genre}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+                  <div className="flex items-center gap-3 rounded-xl bg-muted/50 px-4 py-3">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-primary text-primary-foreground">@</AvatarFallback>
+                    </Avatar>
 
-        <div className="mt-8 border-t border-[#E7DFCF] pt-6">
-          <p className="mb-3 text-sm font-medium text-[#1F2A3C]">My email address</p>
-
-          <div className="flex items-center gap-3 rounded-xl bg-white/70 px-4 py-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/90 text-white">@</div>
-
-            <div>
-              <p className="text-sm text-[#1F2A3C]">{user?.email}</p>
-
-              <p className="text-xs text-[#8A8371]">Primary</p>
-            </div>
-          </div>
-        </div>
+                    <div>
+                      <p className="text-sm">{user?.email}</p>
+                      <p className="text-xs text-muted-foreground">Primary</p>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
-
-      <style>{`
-        .input {
-          width: 100%;
-          border-radius: 0.75rem;
-          border: 1px solid #DCD3BC;
-          background: white;
-          padding: 0.625rem 0.875rem;
-          font-size: 0.875rem;
-          color: #1F2A3C;
-          outline: none;
-          transition: border-color 150ms;
-        }
-
-        .input::placeholder {
-          color: #A79F8C;
-        }
-
-        .input:focus {
-          border-color: #C9A15A;
-          box-shadow: 0 0 0 3px rgba(201,161,90,0.18);
-        }
-      `}</style>
-    </div>
+    </>
   );
 }
 
-function Field({ label, children, className = "" }: { label: string; children: React.ReactNode; className?: string }) {
+function Field({ label, htmlFor, children, className = "" }: { label: string; htmlFor: string; children: React.ReactNode; className?: string }) {
   return (
     <div className={className}>
-      <label className="mb-1.5 block text-sm font-medium text-[#1F2A3C]">{label}</label>
-
+      <Label htmlFor={htmlFor} className="mb-1.5 block">
+        {label}
+      </Label>
       {children}
     </div>
   );
 }
 
-function Select({ value, onChange, options, placeholder }: { value: string; onChange: (value: string) => void; options: string[]; placeholder: string }) {
-  const [open, setOpen] = useState(false);
-
+function ProfileSkeleton() {
   return (
-    <div className="relative">
-      <button type="button" onClick={() => setOpen((prev) => !prev)} className="input flex items-center justify-between text-left">
-        <span className={value ? "text-[#1F2A3C]" : "text-[#A79F8C]"}>{value || placeholder}</span>
-
-        <ChevronDown className={`h-4 w-4 text-[#8A8371] transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-
-          <ul className="absolute z-20 mt-1.5 w-full overflow-hidden rounded-xl border border-[#E7DFCF] bg-white py-1 shadow-lg">
-            {options.map((option) => (
-              <li key={option}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onChange(option);
-                    setOpen(false);
-                  }}
-                  className="flex w-full items-center justify-between px-3.5 py-2 text-left text-sm text-[#1F2A3C] hover:bg-[#F5EFDF]"
-                >
-                  {option}
-
-                  {option === value && <Check className="h-3.5 w-3.5 text-[#C9A15A]" />}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
+    <div className="pt-4">
+      <div className="-mt-12 flex items-end gap-4">
+        <Skeleton className="h-24 w-24 rounded-2xl" />
+        <div className="space-y-2 pb-1">
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="h-4 w-56" />
+        </div>
+      </div>
+      <div className="mt-10 grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

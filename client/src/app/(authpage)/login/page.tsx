@@ -31,7 +31,7 @@ const Login = () => {
     try {
       setLoading(true);
       const { data } = await api.post(`/login`, values);
-      const { _id, firstName, middleName, lastName, email, role, likedBooks, savedBooks } = data.user;
+      const { _id, firstName, middleName, lastName, email, role, likedBooks, savedBooks, profileUrl } = data.user;
       if (data?.isLoggedIn) {
         if(role === "user") {
           router.push("/user/home");
@@ -40,7 +40,7 @@ const Login = () => {
         }
         dispatch(setUser({ 
           name: [firstName, middleName, lastName].filter(Boolean).join(" "), 
-          id: _id, role, email, likedBooks, savedBooks 
+          id: _id, role, email, likedBooks, savedBooks, profileUrl
         }));
       }
     } catch (error: any) {

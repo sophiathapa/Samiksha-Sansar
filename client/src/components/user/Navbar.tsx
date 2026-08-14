@@ -14,13 +14,14 @@ import { timeDisplay } from "@/utils/time";
 import api from "@/lib/axios";
 import { clearUser } from "@/lib/redux/features/user/userSlice";
 import Loader from "./Loader";
+import { AvatarImage } from "@radix-ui/react-avatar";
 
 const SEARCH_DEBOUNCE_MS = 500;
 const MAX_BADGE_COUNT = 9;
 
 const Navbar = () => {
   const user = useSelector((state: RootState) => state.user);
-  const { name: userName, id: userId } = user;
+  const { name: userName, id: userId, profileUrl } = user;
   const [search, setSearch] = useState("");
   const [searchBooks, setSearchBooks] = useState<Book[] | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -285,8 +286,11 @@ const Navbar = () => {
           {/* --- User avatar + dropdown --- */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
-                <AvatarFallback className="text-xs sm:text-base">{userName?.[0]?.toUpperCase()}</AvatarFallback>
+              <Avatar className="w-8 h-8 sm:w-13 sm:h-13">
+                { !profileUrl ? 
+                  <AvatarFallback className="text-xs sm:text-base">{userName?.[0]?.toUpperCase()}</AvatarFallback> :
+                  <AvatarImage src={profileUrl} alt="Profile" /> 
+              }
               </Avatar>
             </DropdownMenuTrigger>
 
@@ -315,10 +319,10 @@ const Navbar = () => {
                   Saved Books
                 </DropdownMenuItem>
 
-                <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/setting")}>
+                {/* <DropdownMenuItem className="flex items-center gap-2 hover:bg-gray-100 rounded-md p-2" onClick={() => router.push("/user/setting")}>
                   <Settings className="w-4 h-4 text-gray-600" />
                   Settings
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
               </DropdownMenuGroup>
 
               <DropdownMenuSeparator className="my-1 border-gray-200" />

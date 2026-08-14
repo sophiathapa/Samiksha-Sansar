@@ -28,7 +28,7 @@ const statusStyles: Record<string, string> = {
 const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   const user = useSelector((state: RootState) => state.user);
   const [comment, setComment] = useState("");
-  const { likedBooks, id: userId, savedBooks, reservedBooks, borrowedBooks } = user;
+  const { likedBooks, role, id: userId, savedBooks, reservedBooks, borrowedBooks } = user;
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -47,44 +47,48 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
   const [selectedCommentId, setSelectedCommentId] = useState<string>("");
 
   const handleLike = async (bookId: string) => {
-    try {
-      if (!likedBooks?.includes(bookId)) {
-        dispatch(addLikedBook(bookId));
-        const { data } = await api.patch(`/like`, {
-          bookId,
-        });
-        setTotalLikes(data.totalLikes);
-      } else {
-        dispatch(removeLikedBook(bookId));
-        const { data } = await api.patch(`/unlike`, {
-          bookId,
-        });
-        setTotalLikes(data.totalLikes);
+    if (role === "user") {
+      try {
+        if (!likedBooks?.includes(bookId)) {
+          dispatch(addLikedBook(bookId));
+          const { data } = await api.patch(`/like`, {
+            bookId,
+          });
+          setTotalLikes(data.totalLikes);
+        } else {
+          dispatch(removeLikedBook(bookId));
+          const { data } = await api.patch(`/unlike`, {
+            bookId,
+          });
+          setTotalLikes(data.totalLikes);
+        }
+      } catch (error: any) {
+        toast.warning(error?.response?.data?.message, { position: "top-right" });
       }
-    } catch (error: any) {
-      toast.warning(error?.response?.data?.message, { position: "top-right" });
     }
   };
 
   const handleAddToRead = async (bookId: string, userId: string) => {
-    try {
-      if (!savedBooks.includes(bookId)) {
-        dispatch(addSavedBook(bookId));
-        const { data } = await api.patch(`/saveBook`, {
-          bookId,
-          userId,
-        });
-        toast.success(data.message, { position: "top-right" });
-      } else {
-        dispatch(removeSavedBook(bookId));
-        const { data } = await api.patch(`/removeSavedBook`, {
-          bookId,
-          userId,
-        });
-        toast.success(data.message, { position: "top-right" });
+    if (role === "user") {
+      try {
+        if (!savedBooks.includes(bookId)) {
+          dispatch(addSavedBook(bookId));
+          const { data } = await api.patch(`/saveBook`, {
+            bookId,
+            userId,
+          });
+          toast.success(data.message, { position: "top-right" });
+        } else {
+          dispatch(removeSavedBook(bookId));
+          const { data } = await api.patch(`/removeSavedBook`, {
+            bookId,
+            userId,
+          });
+          toast.success(data.message, { position: "top-right" });
+        }
+      } catch (error: any) {
+        toast.warning(error?.response?.data?.message, { position: "top-right" });
       }
-    } catch (error: any) {
-      toast.warning(error?.response?.data?.message, { position: "top-right" });
     }
   };
 
@@ -194,11 +198,11 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
     if (isBorrowed) return { primary: "Return Book" };
 
-    if (status === "available" && !isReserved && reservedBy.length === 0 ) return { primary: "Borrow Book" };
+    if (status === "available" && !isReserved && reservedBy.length === 0) return { primary: "Borrow Book" };
 
     if ((status === "unavailable" || status === "available") && !isReserved) return { primary: "Reserve Book" };
 
-    if (!isBorrowed && !book?.borrowerId && isReserved && isFirstInQueue && status === "reserved") return { primary: "Borrow Now", secondary: "Cancel Reserve" };
+    if (!isBorrowed && !book?.borrowerId && isReserved && isFirstInQueue) return { primary: "Borrow Now", secondary: "Cancel Reserve" };
 
     if ((status === "unavailable" || status === "available" || status === "reserved") && isReserved) return { primary: "Cancel Reserve" };
   };
@@ -348,16 +352,18 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
 
           <Separator />
 
-          <div className="flex flex-wrap justify-center px-5 py-5 gap-3">
-            <Button className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
-              {buttonAction?.primary}
-            </Button>
-            {buttonAction?.secondary && (
-              <Button variant="secondary" className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
-                {buttonAction.secondary}
+          {role === "user" && (
+            <div className="flex flex-wrap justify-center px-5 py-5 gap-3">
+              <Button className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
+                {buttonAction?.primary}
               </Button>
-            )}
-          </div>
+              {buttonAction?.secondary && (
+                <Button variant="secondary" className="min-w-32" onClick={(e) => handleBookAction(e, book?._id, userId)}>
+                  {buttonAction.secondary}
+                </Button>
+              )}
+            </div>
+          )}
         </Card>
       </div>
 
@@ -369,7 +375,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
         </CardHeader>
 
         <CardContent className="flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
+          { role === "user" && <div className="flex flex-col gap-2">
             <Textarea ref={textareaRef} value={comment} placeholder="Share your thoughts on this book..." className="min-h-24" onChange={(e) => setComment(e.target.value)} maxLength={500} />
             <div className="flex justify-between items-center">
               <span className="text-xs text-muted-foreground">{comment.length}/500</span>
@@ -384,7 +390,7 @@ const BookDetailCard = ({ book, commentId, onBack }: BookProps) => {
                 )}
               </Button>
             </div>
-          </div>
+          </div>}
 
           <Separator />
 

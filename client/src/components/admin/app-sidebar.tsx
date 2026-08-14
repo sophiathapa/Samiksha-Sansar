@@ -7,6 +7,7 @@ import {
   User2,
   ChevronUp,
   LogOut,
+  Grid2x2,
 } from "lucide-react"
 
 import {
@@ -34,19 +35,14 @@ import Loader from "../user/Loader"
 // Menu items.
 const items = [
   {
-    title: "Book Statics",
-    url: "/admin/setting",
-    icon: Settings,
+    title: "Book",
+    url: "/admin/book-table",
+    icon: Grid2x2,
   },
   {
     title: "Add Book",
     url: "/admin/create",
     icon: Inbox,
-  },
-  {
-    title: "Edit Book",
-    url: "/admin/edit",
-    icon: Calendar,
   },
 ]
 
@@ -90,8 +86,8 @@ export function AppSidebar() {
                   <Home className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Book Club</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-semibold">Samiksha Sansar</span>
+                  <span className="truncate text-xs">Admin</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -145,10 +141,10 @@ export function AppSidebar() {
                   <User2 />
                   Account
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                   <Settings />
                   Settings
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut/>
                   Sign out

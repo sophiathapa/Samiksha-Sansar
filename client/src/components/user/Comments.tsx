@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RootState } from "@/lib/redux/store";
 import { timeDisplay } from "@/utils/time";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
+import { Heart, MessageCircle, MoreHorizontal, ReceiptEuro, ReceiptTurkishLira } from "lucide-react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { DropdownMenuGroup } from "../ui/dropdown-menu";
@@ -35,20 +35,24 @@ interface CommentProps {
 
 export const Comment = ({ review, commentRef, selectedCommentId, getComments, onReply }: CommentProps) => {
   const user = useSelector((state: RootState) => state?.user);
-  const { id: userId } = user;
+  const { id: userId, role } = user;
   const [likeCount, setLikeCount] = useState<number>(review?.totalLikes);
   const [likedBy, setLikedBy] = useState<string[]>(review?.likedBy);
   const userComment: boolean = userId === review?.userId?._id;
 
   const handleCommentLike = async () => {
-    try {
-      const { data } = await api.patch(`/likeComment`, {
-        reviewId: review?._id,
-      });
-      setLikeCount(data?.totalLikes);
-      setLikedBy(data?.likedBy);
-    } catch (error) {
-      console.log(error);
+    if (role === "user") {
+      try {
+        const { data } = await api.patch(`/likeComment`, {
+          reviewId: review?._id,
+        });
+        setLikeCount(data?.totalLikes);
+        setLikedBy(data?.likedBy);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      return;
     }
   };
 

@@ -15,6 +15,7 @@ export interface UserState {
   borrowedBooks: string[];
   reservedBooks: string[];
   savedBooks: string[];
+  profileUrl: string;
 }
 
 const initialState: UserState = {
@@ -26,6 +27,7 @@ const initialState: UserState = {
   borrowedBooks: [],
   reservedBooks: [],
   savedBooks : [],
+  profileUrl: "",
 };
 
 export const userSlice = createSlice({
@@ -41,6 +43,7 @@ export const userSlice = createSlice({
       state.savedBooks = action.payload.savedBooks ?? [];
       state.borrowedBooks = action.payload.borrowedBooks ?? [];
       state.reservedBooks = action.payload.reservedBooks ?? [];
+      state.profileUrl = action.payload.profileUrl ?? "";
     },
 
     clearUser: () => initialState,

@@ -10,9 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Upload, X, ChevronDown, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { AlertMessage } from "@/components/Alert/AlertMessage";
 import { NewBook } from "@/types/book";
 import api from "@/lib/axios";
+import { toast } from "sonner";
+import Loader from "@/components/user/Loader";
 
 export default function AddBookForm() {
   const [bookData, setBookData] = useState<NewBook>({
@@ -31,7 +32,7 @@ export default function AddBookForm() {
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [status, setStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleInputChange = (field: keyof NewBook, value: string | number) => {
     setBookData((prev) => ({ ...prev, [field]: value }));
@@ -91,44 +92,41 @@ export default function AddBookForm() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the data to your API
-    const formData = new FormData();
-    formData.append("title", bookData?.title);
-    formData.append("author", bookData?.author);
-    formData.append("publishedDate", bookData?.publishedDate);
-    formData.append("publisher", bookData?.publisher);
-    formData.append("description", bookData?.description);
-    formData.append("genre[]", JSON.stringify(bookData?.genre));
-    formData.append("averageRating", bookData?.averageRating.toString());
-    formData.append("coverImg", bookData?.coverImg);
-    formData.append("language", bookData?.language);
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      setLoading(true);
+      // Here you would typically send the data to your API
+      const formData = new FormData();
+      formData.append("title", bookData?.title);
+      formData.append("author", bookData?.author);
+      formData.append("publishedDate", bookData?.publishedDate ?? "");
+      formData.append("publisher", bookData?.publisher);
+      formData.append("description", bookData?.description);
+      formData.append("genre[]", JSON.stringify(bookData?.genre));
+      formData.append("averageRating", bookData?.averageRating.toString());
+      formData.append("coverImg", bookData?.coverImg);
+      formData.append("language", bookData?.language);
 
-    api
-      .post(`/book`, formData)
-      .then(() => {
-        setStatus({ success: true, message: "Book added successfully" });
-        setBookData({
-          title: "",
-          author: "",
-          publishedDate: "",
-          publisher: "",
-          description: "",
-          genre: [],
-          averageRating: 0,
-          language: "",
-          coverImg: "",
-        });
-        setImagePreview(null);
-      })
-      .catch((error) => {
-        setStatus({ success: false, message: `${error?.response?.data?.message}` });
+      await api.post(`/book`, formData);
+      setBookData({
+        title: "",
+        author: "",
+        publishedDate: "",
+        publisher: "",
+        description: "",
+        genre: [],
+        averageRating: 0,
+        language: "",
+        coverImg: "",
       });
-  };
-
-  const closeAlert = () => {
-    setStatus(null);
+      setImagePreview(null);
+      toast.success("Book added successfully", { position: "top-right" });
+    } catch (error: any) {
+      toast.warning(error?.response?.data?.message, { position: "top-right" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const genreOptions = [
@@ -166,9 +164,12 @@ export default function AddBookForm() {
     }));
   };
 
+  if (loading) {
+    return <Loader message={"Adding book.."}/>
+  }
+
   return (
     <>
-      {status && <div className="fixed top-0 right-4 z-10">{AlertMessage({ status: status.success, message: status.message, onClose: closeAlert })}</div>}
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
         <SidebarTrigger className="-ml-1" />
         <div className="flex items-center gap-2">
