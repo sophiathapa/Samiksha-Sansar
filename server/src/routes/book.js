@@ -35,7 +35,7 @@ router.get("/popularBooks", getPopularBook);
 router.get("/featuredbooks", getFeaturedBook);
 router.get("/books/search", protect, searchBook);
 router.get("/books/genre", protect, getBookByGenre);
-router.delete("/book", protect, restrictTo("admin"), deleteBook);
+router.delete("/book/:id", protect, restrictTo("admin"), deleteBook);
 router.get("/getImageName", getImageName);
 router.patch("/book/edit/:id", protect, restrictTo("admin"), upload.single("coverImg"), editBook);
 router.patch("/borrowBook", protect, borrowBook);

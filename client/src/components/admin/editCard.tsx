@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
@@ -6,41 +6,66 @@ import { ChevronDown, Star, Upload, X } from "lucide-react";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { cn } from "@/lib/utils";
-import axios from "axios";
 import { Badge } from "../ui/badge";
-import { useRouter } from "next/navigation";
-import { AlertMessage } from "../Alert/AlertMessage";
 import { Book } from "@/types/book";
 import api from "@/lib/axios";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import Loader from "../user/Loader";
+
+const genreOptions = [
+  "Fiction",
+  "Non-Fiction",
+  "Mystery",
+  "Action",
+  "Comedy",
+  "Romance",
+  "Novel",
+  "Poem",
+  "Science Fiction",
+  "Fantasy",
+  "Biography",
+  "History",
+  "Self-Help",
+  "Business",
+  "Health",
+  "Travel",
+  "Cooking",
+  "Art",
+  "Poetry",
+  "Drama",
+  "Horror",
+  "Thriller",
+  "Adventure",
+  "Children's",
+  "Young Adult",
+  "Educational",
+  "Reference",
+  "Religion",
+  "Philosophy",
+];
 
 interface editCardProps {
   book: Book;
-  onback: () => void;
 }
 
-const EditCard = ({ book, onback }: editCardProps) => {
-  const [bookData, setBookData] = useState(book);
-  const [genreInput, setGenreInput] = useState("");
+const EditCard = ({ book }: editCardProps) => {
+  const [bookData, setBookData] = useState<Book>(book);
   const [isGenreDropdownOpen, setIsGenreDropdownOpen] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>();
-  const [image, setImage] = useState<string | File>(book.coverImg);
-  const [status, setStatus] = useState<{ success: boolean; message: string } | null>(null);
-
+  const [image, setImage] = useState<string | File>(book?.coverImg);
   const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    setBookData(book);
+    setImage(book?.coverImg);
+    setImagePreview(null);
+  }, [book]);
 
   const handleInputChange = (field: keyof Book, value: string | number) => {
     setBookData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleAddGenre = () => {
-    if (genreInput.trim() && !bookData.genre.includes(genreInput.trim())) {
-      setBookData((prev) => ({
-        ...prev,
-        genre: [...prev.genre, genreInput.trim()],
-      }));
-      setGenreInput("");
-    }
   };
 
   const handleRemoveGenre = (genreToRemove: string) => {
@@ -87,62 +112,29 @@ const EditCard = ({ book, onback }: editCardProps) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically send the data to your API
-    const formData = new FormData();
-    formData.append("title", bookData.title);
-    formData.append("author", bookData.author);
-    formData.append("publishedDate", bookData.publishedDate);
-    formData.append("publisher", bookData.publisher);
-    formData.append("description", bookData.description);
-    formData.append("genre[]", JSON.stringify(bookData.genre));
-    formData.append("averageRating", bookData.averageRating.toString());
-    formData.append("coverImg", bookData.coverImg);
-    formData.append("language", bookData.language);
-
-    api
-      .patch(`/book/edit/${bookData._id}`, formData)
-      .then(() => {
-        setStatus({ success: true, message: "Book edited successfully" });
-      })
-      .catch((error) => {
-        console.log(error);
-        setStatus({ success: false, message: `${error?.response?.data?.message}` });
-      });
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      setLoading(true);
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append("title", bookData?.title);
+      formData.append("author", bookData?.author);
+      formData.append("publishedDate", bookData?.publishedDate ?? "");
+      formData.append("publisher", bookData?.publisher);
+      formData.append("description", bookData?.description);
+      formData.append("genre[]", JSON.stringify(bookData?.genre));
+      formData.append("averageRating", bookData?.averageRating.toString());
+      formData.append("coverImg", bookData?.coverImg);
+      formData.append("language", bookData?.language);
+      await api.patch(`/book/edit/${bookData?._id}`, formData);
+      toast("Book edited successfully", { position: "top-right" });
+    } catch (error: any) {
+      console.log(error);
+      toast(error?.response?.data?.message, { position: "top-right" });
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const genreOptions = [
-    "Fiction",
-    "Non-Fiction",
-    "Mystery",
-    "Action",
-    "Comedy",
-    "Romance",
-    "Novel",
-    "Poem",
-    "Science Fiction",
-    "Fantasy",
-    "Biography",
-    "History",
-    "Self-Help",
-    "Business",
-    "Health",
-    "Travel",
-    "Cooking",
-    "Art",
-    "Poetry",
-    "Drama",
-    "Horror",
-    "Thriller",
-    "Adventure",
-    "Children's",
-    "Young Adult",
-    "Educational",
-    "Reference",
-    "Religion",
-    "Philosophy",
-  ];
 
   const handleGenreToggle = (genre: string) => {
     setBookData((prev) => ({
@@ -151,13 +143,12 @@ const EditCard = ({ book, onback }: editCardProps) => {
     }));
   };
 
-  const closeAlert = () => {
-    setStatus(null);
-  };
+  if (loading) {
+    return <Loader message={"Editing book.."}/>
+  }
 
   return (
     <>
-      {status && <div className="fixed top-0 right-4 z-10">{AlertMessage({ status: status.success, message: status.message, onClose: closeAlert })}</div>}
       <div>
         <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
           <CardHeader className="pb-8">
@@ -179,7 +170,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
                       id="title"
                       type="text"
                       placeholder="Enter book title"
-                      value={bookData.title}
+                      value={bookData?.title}
                       onChange={(e) => {
                         handleInputChange("title", e.target.value);
                       }}
@@ -192,14 +183,14 @@ const EditCard = ({ book, onback }: editCardProps) => {
                     <Label htmlFor="publisher" className="text-sm font-semibold text-foreground">
                       Publisher
                     </Label>
-                    <Input id="publisher" type="text" placeholder="Enter publisher name" value={bookData.publisher} onChange={(e) => handleInputChange("publisher", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
+                    <Input id="publisher" type="text" placeholder="Enter publisher name" value={bookData?.publisher} onChange={(e) => handleInputChange("publisher", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="language" className="text-sm font-semibold text-foreground">
                       Language
                     </Label>
-                    <Input id="language" type="text" placeholder="e.g., English, Spanish, French" value={bookData.language} onChange={(e) => handleInputChange("language", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
+                    <Input id="language" type="text" placeholder="e.g., English, Spanish, French" value={bookData?.language} onChange={(e) => handleInputChange("language", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
                   </div>
 
                   <div className="space-y-2">
@@ -291,14 +282,14 @@ const EditCard = ({ book, onback }: editCardProps) => {
                     <Label htmlFor="author" className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Author <span className="text-destructive">*</span>
                     </Label>
-                    <Input id="author" type="text" placeholder="Enter author name" value={bookData.author} onChange={(e) => handleInputChange("author", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" required />
+                    <Input id="author" type="text" placeholder="Enter author name" value={bookData?.author} onChange={(e) => handleInputChange("author", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" required />
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="publishedDate" className="text-sm font-semibold text-foreground">
                       Published Date
                     </Label>
-                    <Input id="publishedDate" type="date" value={bookData.publishedDate.split("T")[0]} onChange={(e) => handleInputChange("publishedDate", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
+                    <Input id="publishedDate" type="date" value={bookData?.publishedDate?.split("T")[0]} onChange={(e) => handleInputChange("publishedDate", e.target.value)} className="h-12 border-2 focus:border-primary transition-all duration-200 bg-background/50" />
                   </div>
 
                   <div className="relative space-y-2">
@@ -308,12 +299,12 @@ const EditCard = ({ book, onback }: editCardProps) => {
                     <div className="relative" onClick={() => setIsGenreDropdownOpen(!isGenreDropdownOpen)}>
                       <div className="min-h-[48px] w-full rounded-lg border-2 border-border bg-background/50 px-4 py-3 text-sm ring-offset-background cursor-pointer flex items-center justify-between hover:border-primary/50 transition-all duration-200">
                         <div className="flex-1">
-                          {bookData.genre.length === 0 ? (
+                          {bookData?.genre.length === 0 ? (
                             <span className="text-muted-foreground">Select genres...</span>
                           ) : (
                             <span className="text-foreground font-medium">
-                              {bookData.genre.length} genre
-                              {bookData.genre.length !== 1 ? "s" : ""} selected
+                              {bookData?.genre.length} genre
+                              {bookData?.genre.length !== 1 ? "s" : ""} selected
                             </span>
                           )}
                         </div>
@@ -325,14 +316,14 @@ const EditCard = ({ book, onback }: editCardProps) => {
                           {genreOptions.map((genre) => (
                             <div
                               key={genre}
-                              className={cn("px-4 py-3 text-sm cursor-pointer hover:bg-accent/10 hover:text-accent-foreground flex items-center justify-between transition-colors duration-150", bookData.genre.includes(genre) && "bg-accent/20 text-accent-foreground")}
+                              className={cn("px-4 py-3 text-sm cursor-pointer hover:bg-accent/10 hover:text-accent-foreground flex items-center justify-between transition-colors duration-150", bookData?.genre.includes(genre) && "bg-accent/20 text-accent-foreground")}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleGenreToggle(genre);
                               }}
                             >
                               <span className="font-medium">{genre}</span>
-                              {bookData.genre.includes(genre) && (
+                              {bookData?.genre.includes(genre) && (
                                 <div className="w-5 h-5 bg-accent rounded-full flex items-center justify-center">
                                   <div className="w-2 h-2 bg-accent-foreground rounded-full" />
                                 </div>
@@ -343,9 +334,9 @@ const EditCard = ({ book, onback }: editCardProps) => {
                       )}
                     </div>
 
-                    {bookData.genre.length > 0 && (
+                    {bookData?.genre.length > 0 && (
                       <div className="grid grid-cols-2 gap-2 mt-4 p-4 bg-muted/20 rounded-lg">
-                        {bookData.genre.map((genre) => (
+                        {bookData?.genre.map((genre) => (
                           <Badge key={genre} variant="secondary" className="flex items-center justify-between px-3 py-2 bg-accent/10 text-accent-foreground border border-accent/20 hover:bg-accent/20 transition-colors">
                             <span className="truncate font-medium text-black">{genre}</span>
                             <button type="button" onClick={() => handleRemoveGenre(genre)} className="ml-2 hover:text-destructive flex-shrink-0 transition-colors">
@@ -362,10 +353,10 @@ const EditCard = ({ book, onback }: editCardProps) => {
                     <div className="flex items-center gap-2 p-4 bg-muted/30 rounded-lg">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button key={star} type="button" onClick={() => handleRatingClick(star)} className="p-1 hover:scale-125 transition-all duration-200 rounded-full hover:bg-yellow-50">
-                          <Star className={cn("h-7 w-7 transition-all duration-200", star <= bookData.averageRating ? "fill-yellow-400 text-yellow-400 drop-shadow-sm" : "text-muted-foreground hover:text-yellow-300")} />
+                          <Star className={cn("h-7 w-7 transition-all duration-200", star <= bookData?.averageRating ? "fill-yellow-400 text-yellow-400 drop-shadow-sm" : "text-muted-foreground hover:text-yellow-300")} />
                         </button>
                       ))}
-                      <span className="ml-3 text-sm font-medium text-foreground">{bookData.averageRating > 0 ? `${bookData.averageRating}/5 stars` : "No rating"}</span>
+                      <span className="ml-3 text-sm font-medium text-foreground">{bookData?.averageRating > 0 ? `${bookData?.averageRating}/5 stars` : "No rating"}</span>
                     </div>
                   </div>
                 </div>
@@ -378,7 +369,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
                 <Textarea
                   id="description"
                   placeholder="Enter a detailed description of the bookData..."
-                  value={bookData.description}
+                  value={bookData?.description}
                   onChange={(e) => handleInputChange("description", e.target.value)}
                   className="min-h-[120px] border-2 focus:border-primary transition-all duration-200 bg-background/50 resize-none"
                 />
@@ -388,7 +379,7 @@ const EditCard = ({ book, onback }: editCardProps) => {
                 <Button type="submit" className="flex-1 h-12 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]">
                   Edit Book Details
                 </Button>
-                <Button type="button" variant="outline" className="flex-1 h-12 border-2 hover:border-primary hover:bg-primary/5 font-semibold transition-all duration-200 bg-transparent" onClick={onback}>
+                <Button type="button" variant="outline" className="flex-1 h-12 border-2 hover:border-primary hover:bg-primary/5 font-semibold transition-all duration-200 bg-transparent" onClick={() => router.back()}>
                   Cancel
                 </Button>
               </div>

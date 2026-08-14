@@ -113,8 +113,18 @@ const getNewBook = async (req, res) => {
 };
 
 const deleteBook = async (req, res) => {
-  await Book.deleteOne({ _id: req.query.id });
-  res.status(200).json("Book deleted");
+  try {
+    const book = await Book.exists({_id: req.params.id});
+    if (!book) {
+      return res.status(401).json({ message: "Book not found" });
+    }
+    await Book.deleteOne({ _id: req.params.id });
+    res.status(200).json("Book deleted");
+
+  } catch(error) {
+    console.log(error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 const searchBook = async (req, res) => {
@@ -149,7 +159,7 @@ const editBook = async (req, res) => {
       }
     }
 
-    const book = await Book.findById(id);
+    const book = await Book.exists({ _id:id });
     if (!book) {
       return res.status(404).json({ message: "Book with that id not found" });
     }
@@ -162,6 +172,7 @@ const editBook = async (req, res) => {
 
     return res.status(200).json({ message: "Book updated", book: updatedBook });
   } catch (err) {
+    console.log(err);
     return res.status(500).json({ message: "Something went wrong", error: err.message });
   }
 };
@@ -254,7 +265,7 @@ const getReservedBooks = async (req, res) => {
     }
   } catch (err) {
     console.error("Error fetching reserved books:", err);
-    return res.status(500).json({ error: "Internal server error" });
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 

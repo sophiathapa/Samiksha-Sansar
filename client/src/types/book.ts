@@ -21,7 +21,7 @@ export interface Book {
   averageRating: number;
   language: string;
   coverImg: string ;
-  status: string;
+  status: "available" | "unavailable" | "";
   borrowerId: string;
   reservedBy: string[];
   totalLikes: number;
