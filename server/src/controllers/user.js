@@ -8,42 +8,57 @@ const getAllUsers = async (req, res) => {
   res.json(users);
 };
 
-const getUserProfile = async(req, res) => {
+const getUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const user = await User.findOne ({ _id : userId }).select("firstName middleName lastName email gender profileUrl country genreLiked language");
-    if(!user) {
+    const user = await User.findOne({ _id: userId }).select("firstName middleName lastName email gender profileUrl country genreLiked language");
+    if (!user) {
       return res.status(404).json({ message: "user not found" });
     }
     return res.status(200).json({ user: user });
-  } catch(error) {
+  } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Internal server error" });
   }
-
-}
+};
 
 const register = async (req, res) => {
-  const userExist = await User.exists({ email: req.body.email });
-  if (userExist) {
-    return res.status(400).json({ message: "Email already exist" });
+  try {
+    const userExist = await User.exists({ email: req.body.email });
+
+    if (userExist) {
+      return res.status(400).json({
+        message: "Email already exist",
+      });
+    }
+
+    req.body.password = await bcrypt.hash(req.body.password, 10);
+
+    await User.create(req.body);
+
+    sendEmail({
+      to: req.body.email,
+      subject: "Welcome to Book Club 🎉",
+      text: `Hi ${req.body.firstName}, thanks for registering!`,
+      html: `<h1>Hello ${req.body.firstName}</h1>
+         <p>Welcome to Book Club 🎉</p>`,
+    }).catch((error) => {
+      console.error("WELCOME EMAIL ERROR:", error);
+    });
+
+    return res.status(201).json({
+      message: "User registered successfully",
+      user: req.body,
+      isRegisteredIn: true,
+    });
+  } catch (error) {
+    console.error("REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      message: "Registration failed",
+      error: error.message,
+    });
   }
-  // hashing the plainText password
-  req.body.password = await bcrypt.hash(req.body.password, 10);
-
-  await User.create(req.body);
-  await sendEmail({
-    to: req.body.email,
-    subject: "Welcome to Book Club 🎉",
-    text: `Hi ${req.body.firstName}, thanks for registering!`,
-    html: `<h1>Hello ${req.body.firstName}</h1><p>Welcome to Book Club 🎉</p>`,
-  });
-
-  return res.status(201).json({
-    message: "User registered successfully",
-    user: req.body,
-    isRegisteredIn: true,
-  });
 };
 
 const login = async (req, res) => {
@@ -73,16 +88,16 @@ const login = async (req, res) => {
 const getMe = async (req, res) => {
   try {
     if (!req.user) {
-      return res.status(401).json({ message: "not found"});
+      return res.status(401).json({ message: "not found" });
     } else {
       return res.status(200).json({ user: req.user });
     }
-  } catch(error) {
+  } catch (error) {
     console.log(error);
-      return res.status(500).json({message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
- 
+
 const logout = async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -199,11 +214,7 @@ const editProfile = async (req, res) => {
       updates.profileUrl = req.file.path;
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { $set: updates },
-      { new: true, runValidators: true }
-    ).select("-password");
+    const updatedUser = await User.findByIdAndUpdate(userId, { $set: updates }, { new: true, runValidators: true }).select("-password");
 
     return res.status(200).json({ message: "Profile updated", user: updatedUser });
   } catch (error) {
