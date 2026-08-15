@@ -1,75 +1,77 @@
-# Samiksha Sansar
 
-This is a MERN-based web platform where readers can explore books, read detailed information, leave comments, like books, and get intelligent recommendations based on their preferences.
+# 📚 Samiksha Sansar
 
-Whether you're a casual reader or a bookworm, Samiksha Sansar helps you discover your next favorite read.
+A full-stack book community platform where users can discover books, interact with other readers, discuss books through comments and replies, and borrow or reserve books. Admins can manage the book collection, including adding, editing, and deleting books.
 
-## Features
+## 🌐 Live Demo
 
-- 📖 **Book Exploration**: Browse a large collection of books across multiple genres.
+🔗 **[Samiksha Sansar](https://samiksha-sansar-7fdp.vercel.app)**
 
-- 🔍 **Smart Search & Filters**: Search books by title, author, or genre.
 
-- ❤️ **Like & Comment System**: Users can like their favorite books.
+##  Main Features
 
-- 🧠 **Book Recommendation Engine**: Personalized recommendations based on genres and popularity.
+* 🔐 **User Authentication & Authorization** — Secure JWT-based authentication with HTTP-only cookie sessions and protected routes.
+* 📚 **Book Discovery** — Browse, search, filter, and sort books with detailed book information.
+* 🔄 **Borrowing System** — Borrow and return books while tracking current borrowing status.
+* 📌 **Book Reservation** — Reserve unavailable books and automatically manage reservation queues.
+* ⚡ **Real-Time Notifications** — Receive instant notifications using Socket.IO when reserved books become available.
+* ❤️ **Favorites & Saved Books** — Save books and manage personalized favourite collections.
+* 📖 **Reading Status Tracking** — Track books based on reading progress and status.
+* ⭐ **Reviews & Ratings** — Add, manage, and view user reviews and ratings for books.
+* 🖼️ **Image Upload & Management** — Upload and manage book/user images using Multer and Cloudinary.
+* 📧 **Email Notifications** — Send automated emails using Nodemailer for important user and system events.
+* 📱 **Responsive UI & Production Deployment** — Responsive interface built with Tailwind CSS and shadcn/ui, deployed with Vercel, Render, and MongoDB Atlas.
 
-- 👤 **User System**: User registration and login. Personalized dashboard for liked books and comment history.
 
-- 💡 **Admin Features**: Add, update, or delete books.
 
-## Tech Stack (MERN)
- **Frontend**
 
-  - React.js
 
-  - HTML5, CSS3
 
-  - JavaScript (ES6+)
+##  Tech Stack
 
-  - Tailwind CSS 
+| Category            | Technologies                                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Frontend**        | Next.js, React.js, TypeScript, Tailwind CSS, shadcn/ui, Redux, Axios, Formik, Yup, Socket.IO Client                         |
+| **Backend**         | Node.js, Express.js, RESTful APIs, JWT Authentication, Cookie-based Authentication, Mongoose, Nodemailer, Socket.IO, Multer |
+| **Database**        | MongoDB, MongoDB Atlas, Mongoose ODM                                                                                        |
+| **Storage & Media** | Cloudinary                                                                                                                  |
+| **Deployment**      | Vercel (Frontend), Render (Backend), MongoDB Atlas (Database), Cloudinary (Image Storage)                                   |
 
-  - Redux / Context API (state management)
 
-**Backend**
 
-  - Node.js
+## Installation
 
-  - Express.js
 
-  - RESTful API architecture
+**Clone the repository:**
 
-  - JWT Authentication / OAuth 
+```bash
+git clone https://github.com/sophiathapa/Samiksha-Sansar.git
 
-**Database**
+```
 
-  - MongoDB
+**Install dependencies (Lucide React):**
 
-  - Mongoose ODM
+```bash
+npm install 
+# or
+yarn add 
+```
 
-## ✅ Development Phases
+**Running the Application**
 
-### 📍 Phase 1 – MVP (Core System)
+```bash
+npm run dev
+# or
+yarn dev
+```
 
-- [x] Setup MERN architecture
-- [x] User Registration & Login pages.
-- [x] Basic Logout functionality.
-- [x] Add New Book form/page.
-- [x] Display All Books list/page.
-- [x] Basic Book Search/Filter UI.
-- [x] View Single Book details page. 
-- [x] Basic dashboards (user/admin).
 
-### ✨ Phase 2 – Improved Functionality
 
-- [x] Ratings and reviews by readers
-- [ ] Reading Status Management
-- [ ] Custom Book Lists/Shelves
-- [ ] Profile Page Enhancements
-- [ ] User Reviews & Ratings
+## Screenshots
 
-### 🚀 Phase 3 – Advanced Features
+#### User page
+![User Page](client/public/userPage.png)
 
-- [ ] Personalized Book Recommendations
-- [ ] Reading Challenges/Goals UI
-- [ ] Quote & Note Taking
+#### Admin page
+![Admin Page](client/public/adminPage.png)
+
